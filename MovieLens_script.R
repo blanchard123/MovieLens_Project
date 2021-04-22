@@ -5,9 +5,14 @@
 ### https://github.com/blanchard123/MovieLens_Project
 
 ##########################################################
-# MovieLens Recommendation Systems Project Code 
+##########################################################
+##### MovieLens Recommendation Systems Project Code #####
+#########################################################
 #########################################################
 
+
+
+#################### DATA WRANGLING ####################
 
 ##########################################################
 # Create edx set and validation set (final hold-out test set)
@@ -67,8 +72,11 @@ rm(dl, ratings, movies, test_index, temp, movielens, removed)
 save(edx, file="edx.RData")
 save(validation, file = "validation.RData")
 
-# Load additional libraries 
 
+
+#################### LOAD LIBRARIES ####################
+
+# Load additional libraries 
 if(!require(caretEnsemble)) install.packages("caretEnsemble", repos = "http://cran.us.r-project.org")
 if(!require(dplyr)) install.packages("dplyr", repos = "http://cran.us.r-project.org")
 if(!require(gam)) install.packages("gam", repos = "http://cran.us.r-project.org")
@@ -102,8 +110,10 @@ library(stringr)
 library(dplyr)
 
 
-#############################################
-########## BASIC DATA EXPLORATION ##########
+
+#################### BASIC DATA EXPLORATION #################### 
+
+options(digits = 5)
 
 # basic identification of data and variables 
 str(edx, strict.width="cut")
@@ -266,7 +276,8 @@ edx %>%
 edx_dates <- edx %>% mutate(date_rated = as_datetime(timestamp))
 
 # plot of average rating by week of rating
-plot1<- edx_dates %>% mutate(week_rated = round_date(date_rated, unit = "week")) %>%
+plot1<- edx_dates %>% 
+  mutate(week_rated = round_date(date_rated, unit = "week")) %>%
   group_by(week_rated) %>%
   summarize(average = mean(rating)) %>%
   ggplot(aes(x = week_rated, y = average)) +
@@ -282,7 +293,8 @@ plot1<- edx_dates %>% mutate(week_rated = round_date(date_rated, unit = "week"))
   theme(plot.margin = unit(c(1,1,1,1), "cm"))
 
 # plot of average rating by month of rating
-plot2 <- edx_dates %>% mutate(month_rated = round_date(date_rated, unit = "month")) %>%
+plot2 <- edx_dates %>% 
+  mutate(month_rated = round_date(date_rated, unit = "month")) %>%
   group_by(month_rated) %>%
   summarize(average = mean(rating)) %>%
   ggplot(aes(x = month_rated, y = average)) +
@@ -298,7 +310,8 @@ plot2 <- edx_dates %>% mutate(month_rated = round_date(date_rated, unit = "month
   theme(plot.margin = unit(c(1,1,1,1), "cm"))
 
 # plot of average rating by year of rating
-plot3 <- edx_dates %>% mutate(year_rated = round_date(date_rated, unit = "year")) %>%
+plot3 <- edx_dates %>% 
+  mutate(year_rated = round_date(date_rated, unit = "year")) %>%
   group_by(year_rated) %>%
   summarize(average = mean(rating)) %>%
   ggplot(aes(x = year_rated, y = average)) +
@@ -339,7 +352,7 @@ edx_dates <- edx_dates %>% mutate(date_released = str_extract(edx$title, "\\((\\
 edx_dates <- edx_dates %>% mutate(date_released = str_extract(edx_dates$date_released, "(\\d{4})"))
 edx_dates <- edx_dates %>% mutate(year_released = as.numeric(date_released))
 
-# calculating the difference between release date and rating date 
+# calculating the difference between release date and rating date #####################################################
 edx_dates <- edx_dates %>% mutate(year_rated = year(date_rated)) %>%
   mutate(relative_rating_age = year_rated - as.numeric(year_released))
 
@@ -532,7 +545,245 @@ edx %>% separate_rows(genres, sep = "\\|") %>%
   kable_styling(font_size = 10)
 
 
-### Modeling Results
+# plot of number of ratings by separate movie genres (CAUTION slow code)
+edx %>% separate_rows(genres, sep = "\\|") %>%
+  group_by(genres) %>%
+  summarize(number = n()) %>%
+  mutate(genres = reorder(genres, -number)) %>%
+  ggplot(aes(genres, number)) + 
+  geom_bar(aes(fill = genres), stat = "identity") +
+  scale_y_continuous(labels = comma, breaks = pretty_breaks(n = 10)) +
+  xlab("Individual Genres") +
+  ylab("Frequency of Ratings") +
+  theme_light() +
+  ggtitle("Figure 15: Frequency of Ratings per Individual Genres") +
+  theme(axis.title.x = element_text(vjust = -3)) +
+  theme(axis.title.y = element_text(angle = 90, vjust = 3)) +
+  theme(plot.title = element_text(size = 15, vjust = 5, hjust = 0.5)) +
+  theme(plot.margin = unit(c(1,1,1,1), "cm")) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) + 
+  theme(legend.position = "none")
+
+# plot of average ratings by separate movie genres (CAUTION slow code)
+edx %>% separate_rows(genres, sep = "\\|") %>%
+  group_by(genres) %>%
+  summarize(n = n(), average = mean(rating), se = sd(rating)/sqrt(n())) %>%
+  filter(n >= 1000) %>% 
+  mutate(genres = reorder(genres, -average)) %>%
+  ggplot(aes(x = genres, y = average, ymin = average - 2*se, ymax = average + 2*se)) + 
+  geom_point(color = "#00abff") +
+  geom_errorbar(color = "Black") + 
+  scale_y_continuous(breaks = pretty_breaks(n = 10)) +
+  xlab("Individual Genres") +
+  ylab("Average Rating") +
+  theme_light() +
+  ggtitle("Figure 16: Average Rating per Individual Genres") +
+  theme(axis.title.x = element_text(vjust = -3)) +
+  theme(axis.title.y = element_text(angle = 90, vjust = 3)) +
+  theme(plot.title = element_text(size = 15, vjust = 5, hjust = 0.5)) +
+  theme(plot.margin = unit(c(1,1,1,1), "cm")) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+
+
+
+#################### MODELING APPROACHES ####################
+
+
+########## Data preparation for algorithm training ########## 
+
+# partition the edx dataset into training and test sets
+set.seed(85, sample.kind = "Rounding")
+test_index <- createDataPartition(y = edx$rating, times = 1, p = 0.2, list = FALSE)
+
+train_set <- edx[-test_index,]
+test_set <- edx[test_index,]
+
+# ensure we only include movies and users in the test set that are also in the train set 
+test_set <- test_set %>% 
+  semi_join(train_set, by = "movieId") %>%
+  semi_join(train_set, by = "userId")
+
+# save the training and test datasets
+save(train_set, file = "train_set.RData")
+save(test_set, file = "test_set.RData")
+
+# create a funtion that computes RMSE 
+RMSE <- function(true_ratings, predicted_ratings){ 
+  sqrt(mean((true_ratings - predicted_ratings)^2, na.rm = TRUE))
+}
+
+
+
+########## Model 1 - Average only ########## 
+
+# train the model 
+mu <- mean(train_set$rating) 
+mu
+
+# examine the performance of the model in the test set
+model_1_rmse <- RMSE(test_set$rating, mu)
+
+# create a table to store and compare results of the different models 
+results_rmse <- data.frame(method = "Model #1 - Average", RMSE = model_1_rmse)
+
+results_rmse %>% 
+  kable(caption = "Results of Predictive Model in the Test Dataset", align = "c") %>%
+  kable_styling(font_size = 10)
+
+
+
+########## Model 2 - Movie Effects ########## 
+
+# train the model 
+movie_averages <- train_set %>% 
+  group_by(movieId) %>% 
+  summarize(b_i = mean(rating - mu))
+
+# examine the performance of the model in the test set 
+predicted_ratings <- test_set %>% 
+  left_join(movie_averages, by = 'movieId') %>%
+  mutate(pred = mu + b_i) %>%
+  .$pred
+
+model_2_rmse <- RMSE(predicted_ratings, test_set$rating)
+
+# add the results to the table comparing different models 
+results_rmse <- bind_rows(results_rmse,
+                          data.frame(method = "Model #2 - Movie Effects", RMSE = model_2_rmse))
+
+results_rmse %>% 
+  kable(caption = "Results of Predictive Models in the Test Dataset", align = "c") %>%
+  kable_styling(font_size = 10)
+
+
+
+########## Model 3 - Movie and User Effects ########## 
+
+# train the model 
+user_averages <- train_set %>% 
+  left_join(movie_averages, by = 'movieId') %>%
+  group_by(userId) %>%
+  summarize(b_u = mean(rating - mu - b_i))
+
+# examine the performance of the model in the test set 
+predicted_ratings <- test_set %>% 
+  left_join(movie_averages, by = 'movieId') %>%
+  left_join(user_averages, by = 'userId') %>%
+  mutate(pred = mu + b_i + b_u) %>%
+  .$pred
+
+model_3_rmse <- RMSE(predicted_ratings, test_set$rating)
+
+# add the results to the table comparing different models 
+results_rmse <- bind_rows(results_rmse,
+                          data.frame(method = "Model #3 - Movie & User Effects", RMSE = model_3_rmse))
+results_rmse %>% 
+  kable(caption = "Results of Predictive Models in the Test Dataset", align = "c") %>%
+  kable_styling(font_size = 10)
+
+
+
+########## Movie 4 - Regularized Movie and User Effects ########## 
+
+# examine errors in prediction from the movie model 
+test_set %>% left_join(movie_averages, by = 'movieId') %>%
+  mutate(residual = rating - (mu + b_i)) %>%
+  arrange(desc(abs(residual))) %>%
+  slice(1:20) %>% 
+  select(title, residual)
+
+# create a new dataset to examine errors in prediction from movie effects model
+movie_titles <- edx %>% 
+  select(movieId, title) %>%
+  distinct()
+
+# table of top 20 movies by movie effect with number of ratings 
+movie_averages %>% left_join(movie_titles, by = "movieId") %>%
+  arrange(desc(b_i)) %>% 
+  select(title, b_i) %>% 
+  slice(1:20)
+
+train_set %>% dplyr::count(movieId) %>% 
+  left_join(movie_averages) %>%
+  left_join(movie_titles, by="movieId") %>%
+  arrange(desc(b_i)) %>% 
+  select(title, b_i, n) %>% 
+  slice(1:20) %>% 
+  kable(caption = "Best 20 Movie Effects and Frequency of Ratings") %>%
+  kable_styling(font_size = 10)
+
+# table of worst 20 movies by movie ranking with number of ratings 
+movie_averages %>% left_join(movie_titles, b = "movieId") %>%
+  arrange(b_i) %>% 
+  select(title, b_i) %>% 
+  slice(1:20)
+
+train_set %>% dplyr::count(movieId) %>% 
+  left_join(movie_averages) %>%
+  left_join(movie_titles, by = "movieId") %>%
+  arrange(b_i) %>% 
+  select(title, b_i, n) %>% 
+  slice(1:20) %>% 
+  kable(caption = "Worst 20 Movie Effects and Frequency of Ratings") %>%
+  kable_styling(font_size = 10)
+
+# define lambda to determine the optimal parameter 
+lambdas <- seq(0, 10, 0.25)
+
+# train the model 
+rmses <- sapply(lambdas, function(l){
+  mu <- mean(train_set$rating)
+  b_i <- train_set %>% 
+    group_by(movieId) %>%
+    summarize(b_i = sum(rating - mu)/(n()+l))
+  b_u <- train_set %>% 
+    left_join(b_i, by = "movieId") %>%
+    group_by(userId) %>%
+    summarize(b_u = sum(rating - mu - b_i)/(n()+l))
+  predicted_ratings <- test_set %>% 
+    left_join(b_i, by = "movieId") %>%
+    left_join(b_u, by = "userId") %>%
+    mutate(pred = mu + b_i + b_u) %>%
+    .$pred
+  return(RMSE(predicted_ratings, test_set$rating))
+})
+
+# determine the optimal lambda
+data1 <- data.frame(lambdas, rmses)
+data1 %>% ggplot(aes(lambdas, rmses)) +
+  geom_point(color = "#00abff") +
+  xlab("Lambdas") +
+  ylab("RMSEs") +
+  theme_light() +
+  ggtitle("Figure 17: Selection of Optimal Lambda") +
+  theme(axis.title.x = element_text(vjust = -3)) +
+  theme(axis.title.y = element_text(angle = 90, vjust = 3)) +
+  theme(plot.title = element_text(size = 15, vjust = 5, hjust = 0.5)) +
+  theme(plot.margin = unit(c(1,1,1,1), "cm"))
+
+lambda <- lambdas[which.min(rmses)]
+lambda
+
+# add the results to the table comparing different models 
+results_rmse <- bind_rows(results_rmse,
+                          data_frame(method = "Model #4 - Regularized Movie & User Effects", 
+                                     RMSE = min(rmses)))
+results_rmse %>% 
+  kable(caption = "Results of Predictive Models in the Test Dataset", align = "c") %>%
+  kable_styling(font_size = 10)
+
+
+
+########## Model 5 - Reg. Movie and User and Time Effects ########## 
+
+
+
+
+
+########## Model 6 - Reg. Movie and User and Time and Genre Effects ########## 
+
+
 
 
 

@@ -31,7 +31,8 @@ This project aimed to accomplish a similar feat to the Netflix challenge. Specif
 The 10M version of the MovieLens data will be used in order to develop a predictive model. The dataset will be separated into a training set (edx) and a test set (final hold-out validation set). The final predictive model will be evaluated based on its performance in the final hold-out validation set.  
 
 The loss function used to evaluate the predictive algorithm is the root mean square error (RMSE), which is a common metric of distance between the predicted and observed values. Values of RMSE will be used to evaluate the accuracy of the predictive models during the training phase and used to determine the overall accuracy of the final model using the validation set. As a measure of distance between predicted and observed values, lower values of RMSE indicate more accurate predictions. The specific RMSE formula used in this project is provided here:  
-$$ RMSE = \sqrt{\frac{1}{N}\displaystyle\sum_{u,i} (\hat{y}_{u,i}-y_{u,i})^{2}} $$  
+
+$$ RMSE = \sqrt{\frac{1}{N} \displaystyle\sum_{u,i} (\hat{y}_{u,i} - y_{u,i})^{2}} $$  
 
 ## Dataset  
 
@@ -147,6 +148,8 @@ library(Rborist)
 library(scales)
 library(stringr)
 library(dplyr)
+
+options(digits = 5)
 ```
 
 ## Data Inspection  
@@ -190,6 +193,11 @@ In addition, the dataset could be converted from its current format in which a g
 ``` {r date and time transformations}
 # transform timestamp to date of rating 
 edx_dates <- edx %>% mutate(date_rated = as_datetime(timestamp))
+
+# creating the year and month of rating
+edx_dates <- edx_dates %>% 
+  mutate(year_rated = round_date(date_rated, unit = "year")) %>%
+  mutate(month_rated = round_date(date_rated, unit = "month"))
 
 # extracting the release date of each movie
 edx_dates <- edx_dates %>% mutate(date_released = str_extract(edx$title, "\\((\\d{4})\\)"))
@@ -374,7 +382,7 @@ edx %>% group_by(userId) %>%
 
 Additionally, Figure 5 presents the average user rating (for users that have rated at least 100 movies). As seen in the graph, most users have an avergae rating between 3.00 and 4.25. Once again, it is evident that users differ substantially in how critical they are of the movies. Some users tend to provide much lower ratings compared to others. Thus, a user effect may be useful in the predictive models.
 
-``` {r frequency of average rating, echo = FALSE}
+``` {r frequency of average user rating, echo = FALSE}
 # plot of the frequency of average user rating
 edx %>%
   group_by(userId) %>%
@@ -652,9 +660,7 @@ edx %>% separate_rows(genres, sep = "\\|") %>%
 ```
 \
 
-First, the overall genre combinations were examined (i.e., treating each specific combination of genre tags as a separate factor). Considered in this manner, there are 797 unique genre combinations. 
-
-Figure 13 presents the frequency of ratings for all of the genre combinations with at least 1000 ratings in descending order. As seen in this figure and Table 10, two genre combinations have received nearly twice as many ratings as all of the other combinations (i.e., "Drama" and "Comedy") and the top six categories have received the majority of ratings and are all closely related genre combinations. As well, Figure 14 presents the average rating for all of the genre combinations with at least 1000 ratings in descending order, with error bars around the means set to plus or minus two standard errors. The average rating for some genre combinations peaks at a high of just over 4.3 compared to the lowest values of under 2.1. Therefore, it seems that overall genre combination may be a useful variable to include in the predictive models. 
+First, the overall genre combinations were examined (i.e., treating each specific combination of genre tags as a separate factor). Considered in this manner, there are 797 unique genre combinations. Figure 13 presents the frequency of ratings for all of the genre combinations with at least 1000 ratings in descending order. As seen in this figure and Table 10, two genre combinations have received nearly twice as many ratings as all of the other combinations (i.e., "Drama" and "Comedy") and the top six categories have received the majority of ratings and are all closely related genre combinations. As well, Figure 14 presents the average rating for all of the genre combinations with at least 1000 ratings in descending order, with error bars around the means set to plus or minus two standard errors. The average rating for some genre combinations peaks at a high of just over 4.3 compared to the lowest values of under 2.1. Therefore, it seems that overall genre combination may be a useful variable to include in the predictive models.  
 
 ``` {r frequency of ratings by overall genre combination, echo = FALSE}
 # plot of the number of rating by overall genre combination (for genres with n >= 1000)
@@ -699,19 +705,309 @@ edx %>% group_by(genres) %>%
 ```
 \
 
+Next, the individual genre tags were examined (i.e., separating each overall genre combination into the individual genre tags and treating the individual tags as separate factors). Considered in this manner, there are 19 unique genre tags and a no genre listed category (see Table 11). Once again, two genre tags (i.e., "Drama" and "Comedy") have received far more ratings than the others, with some categories receiving relatively few ratings (i.e., "Documentary" and "IMAX"). Figure 15 presents the frequency of ratings for each of the individual genre tags in descending order. The same pattern is apparent as before, with some genre tags receiving susbstantially more ratings than others. In addition, Figure 16 shows the average rating for each of the indvidual genre tags, with error bars around the means set to plus or minus two standard errors. The average rating across the individual genre tags varies from over 4.0 for "Film-Noir" to under 3.3 for "Horror" movies. Consistent with the above examination, genre infromation appears to have some backing for inclusion in a predictive model.  
+
+``` {r frequency of ratings by individual genre tags, echo = FALSE}
+# plot of number of ratings by separate movie genres (CAUTION slow code)
+edx %>% separate_rows(genres, sep = "\\|") %>%
+  group_by(genres) %>%
+  summarize(number = n()) %>%
+  mutate(genres = reorder(genres, -number)) %>%
+  ggplot(aes(genres, number)) + 
+  geom_bar(aes(fill = genres), stat = "identity") +
+  scale_y_continuous(labels = comma, breaks = pretty_breaks(n = 10)) +
+  xlab("Individual Genres") +
+  ylab("Frequency of Ratings") +
+  theme_light() +
+  ggtitle("Figure 15: Frequency of Ratings per Individual Genres") +
+  theme(axis.title.x = element_text(vjust = -3)) +
+  theme(axis.title.y = element_text(angle = 90, vjust = 3)) +
+  theme(plot.title = element_text(size = 15, vjust = 5, hjust = 0.5)) +
+  theme(plot.margin = unit(c(1,1,1,1), "cm")) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) + 
+  theme(legend.position = "none")
+```
+\
+
+``` {r average rating by individual genre tags, echo = FALSE}
+# plot of average ratings by separate movie genres (CAUTION slow code)
+edx %>% separate_rows(genres, sep = "\\|") %>%
+  group_by(genres) %>%
+  summarize(n = n(), average = mean(rating), se = sd(rating)/sqrt(n())) %>%
+  filter(n >= 1000) %>% 
+  mutate(genres = reorder(genres, -average)) %>%
+  ggplot(aes(x = genres, y = average, ymin = average - 2*se, ymax = average + 2*se)) + 
+  geom_point(color = "#00abff") +
+  geom_errorbar(color = "Black") + 
+  scale_y_continuous(breaks = pretty_breaks(n = 10)) +
+  xlab("Individual Genres") +
+  ylab("Average Rating") +
+  theme_light() +
+  ggtitle("Figure 16: Average Rating per Individual Genres") +
+  theme(axis.title.x = element_text(vjust = -3)) +
+  theme(axis.title.y = element_text(angle = 90, vjust = 3)) +
+  theme(plot.title = element_text(size = 15, vjust = 5, hjust = 0.5)) +
+  theme(plot.margin = unit(c(1,1,1,1), "cm")) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+\
+
 # Modeling Approaches  
+
+Due to the size of the dataset and limitations of the operating system, many machine learning functions were not possible. As described above, the MovieLens dataset contains over 10 million ratings (9,000,055 in the edx and 7,200,043 in the training dataset) with over 70,000 unique users (69,878 in the edx and training datasets) and over 10,000 unique movies (10,677 in the edx and 10,644 in the training dataset). As a result of the sheer volume of data, it was not possible to run any training functions from the caret package (i.e., R would crash or produce a system related error). Therefore, a linear approach using the least squares estimate was undertaken using the possible predictors identified in the exploratory analyses.  
+
+Based on the exploratory analyses described above, it appears that each of the examined variables may prove useful in trying to build the predictive algorithm for the recommendation system. Accordingly, the approach taken here will entail the additional of each variable in turn and examination of the performance of the predictive model at each stage using the test dataset. The full code for each of the models is available in the supplemental code file.   
+
+Prior to building the predictive models, the edx dataset will be partitioned into a training (80%) and a test dataset (20%), in a similar manner that was done previously to partition the MovieLens data into the edx and validation datasets. In this instance, the training dataset will be used to develop the predictive models and the test dataset will be used to evaluate the overall performance of the models during the training stage. As mentioned, the validation dataset (i.e., final hold-out validation dataset) will only be used to evaluate the performance of the final model during the evaluation stage. The code used to partition the edx dataset is presented here:  
+
+``` {r partitioning the edx dataset into training and test sets, warning = FALSE}
+# partition the edx dataset into training and test sets
+set.seed(85, sample.kind = "Rounding")
+test_index <- createDataPartition(y = edx$rating, times = 1, p = 0.2, list = FALSE)
+
+train_set <- edx[-test_index,]
+test_set <- edx[test_index,]
+
+# ensure only movies and users in the test set are also in the train set
+test_set <- test_set %>% 
+  semi_join(train_set, by = "movieId") %>%
+  semi_join(train_set, by = "userId")
+```
+
+``` {r save new datasets, echo = FALSE}
+# save the training and test datasets
+save(train_set, file = "train_set.RData")
+save(test_set, file = "test_set.RData")
+```
+\
+
+Additionally, as described above, the RMSE will be used to evaluate the performance of the models, both during development and evaluation. In this context, the RMSE is a measure of deviation, similar to the standard deviation. It defines the error present in the predictive models. An RMSE of one means that on average the predicted values are off by one star. The aim is to develop a predictive model that produces the lowest RMSE. The code used for the RMSE function is presented here:  
+
+``` {r create the RMSE function}
+# create a funtion that computes RMSE 
+RMSE <- function(true_ratings, predicted_ratings){ 
+  sqrt(mean((true_ratings - predicted_ratings)^2, na.rm = TRUE))
+}
+```
+
+## Baseline Model  
+
+The first model consists of the simplest recommendation system. In order to get a baseline RMSE for comparison with other models, the first model examined consisted of no predictors. The mean value across all ratings in the training set is used to predict all ratings. That is, this model predicts the average rating for all of the movies ignoring any possible effects or biases.  
+
+This model can be represented with the following formula, with  
+
+* $\mu$ equal to the overall mean of all ratings  
+* $\epsilon_{u,i}$ equal to the residual errors that are assumed to be independent across all ratings  
+
+$$ Y_{u,i} = \mu + \epsilon_{u,i} $$  
+
+Table 12 displays the results of this baseline model. This value will be used to examine whether the inclusion of other predictors improves the predictive algorithm. From Table 12, we see that this base line model predicts with an average error of approximately 1.05994 stars.  
+
+``` {r model 1 - average only, echo = FALSE}
+# train the model 
+mu <- mean(train_set$rating)
+
+# examine the performance of the model in the test set
+model_1_rmse <- RMSE(test_set$rating, mu)
+
+# create a table to store and compare results of the different models 
+results_rmse <- data.frame(method = "Model #1 - Average", RMSE = model_1_rmse)
+
+results_rmse %>% 
+  kable(caption = "Results of Predictive Model in the Test Dataset", align = "c") %>%
+  kable_styling(font_size = 10)
+```
+\
 
 ## Movie Effects  
 
+From the exploratory analyses, it was apparent that there was considerable variability in the average movie ratings (see Figure 3). Thus, a term was included in the second model to account for these differences in average movie rating. Specifically, the average deviation of each movie from the overall mean rating was included to account for the movie effect or bias.  
+
+This model can be represented with the following formula, with   
+
+*	$\mu$ and $\epsilon_{u,i}$ the same as above  
+*	$b_i$ equal to the average deviation from $\mu$ for movie i
+
+$$Y_{u,i} = \mu +b_{i}+ \epsilon_{u,i}$$  
+
+Table 13 shows the results of the second model and the baseline model. This model now takes into account that some movies are generally rated higher or lower than average. The second model including a movie effect erm increased the accuracy from 1.05994 to 0.94286. The addition of other predictors may improve the model.  
+
+``` {r model 2 - movie effects, echo = FALSE}
+# train the model 
+movie_averages <- train_set %>% 
+  group_by(movieId) %>% 
+  summarize(b_i = mean(rating - mu))
+
+# examine the performance of the model in the test set 
+predicted_ratings <- test_set %>% 
+  left_join(movie_averages, by = 'movieId') %>%
+  mutate(pred = mu + b_i) %>%
+  .$pred
+
+model_2_rmse <- RMSE(predicted_ratings, test_set$rating)
+
+# add the results to the table comparing different models 
+results_rmse <- bind_rows(results_rmse,
+                          data.frame(method = "Model #2 - Movie Effects", RMSE = model_2_rmse))
+
+results_rmse %>% 
+  kable(caption = "Results of Predictive Models in the Test Dataset", align = "c") %>%
+  kable_styling(font_size = 10)
+```
+\
+
 ## User Effects  
+
+The exploratory analyses also revealed that some users give higher and lower ratings than others. That is, there was variability in the average user rating (see Figure 5). In the third model, a term was included to account for these differences in average user rating. Specifically, the average deviation of each user from the overall mean and movie mean was included to account for the user effect or bias.  
+
+This model can be represented with the following formula, with  
+
+*	$\mu$, $\epsilon_{u,i}$, and $b_i$ the same as above  
+*	$b_u$ equal to the average deviation from $\mu$ minus $b_i$ for user u  
+
+$$ Y_{u, i} = \mu + b_{i} + b_{u} + \epsilon_{u, i} $$  
+
+Table 14 shows the results of the third model. This model now takes into account the variability in average movies and user ratings. With these two predictors, the model has improved the accuracy substantially to 0.86495. However, as discussed above, there is large variability in the frequency of movie and user rating, with some movies and users having much more ratings than others. As the average movie and user ratings are then based on different numbers of observations, some of these averages are more trustworthy than others.  
+
+``` {r model 3 - movie and user effects, echo = FALSE}
+# train the model 
+user_averages <- train_set %>% 
+  left_join(movie_averages, by = 'movieId') %>%
+  group_by(userId) %>%
+  summarize(b_u = mean(rating - mu - b_i))
+
+# examine the performance of the model in the test set 
+predicted_ratings <- test_set %>% 
+  left_join(movie_averages, by = 'movieId') %>%
+  left_join(user_averages, by = 'userId') %>%
+  mutate(pred = mu + b_i + b_u) %>%
+  .$pred
+
+model_3_rmse <- RMSE(predicted_ratings, test_set$rating)
+
+# add the results to the table comparing different models 
+results_rmse <- bind_rows(results_rmse,
+                          data.frame(method = "Model #3 - Movie & User Effects", RMSE = model_3_rmse))
+results_rmse %>% 
+  kable(caption = "Results of Predictive Models in the Test Dataset", align = "c") %>%
+  kable_styling(font_size = 10)
+```
+\
 
 ## Regularized Movie and User Effects  
 
+As seen in Figure 2 and Figure 4, the number of ratings per movie and user varies considerably. Some of the averages are based on relatively small numbers of observations. Table 15 shows the movies with the largest movie effect and the number of times they were rated, while Table 16 shows the movies with the lowest movie effects. Most of these movies have been rated a single time and none have been rated more than 167 times.  
+
+``` {r top 10 movies, echo = FALSE}
+# create a new dataset to examine errors in prediction from Movie effects model
+movie_titles <- edx %>% 
+  select(movieId, title) %>%
+  distinct()
+
+# table of top 20 movies by movie effect with number of ratings 
+train_set %>% dplyr::count(movieId) %>% 
+  left_join(movie_averages) %>%
+  left_join(movie_titles, by="movieId") %>%
+  arrange(desc(b_i)) %>% 
+  select(title, b_i, n) %>% 
+  slice(1:20) %>% 
+  kable(caption = "Best 20 Movie Effects and Frequency of Ratings") %>%
+  kable_styling(font_size = 10)
+```
+\
+
+``` {r bottom 10 movies, echo = FALSE}
+# table of worst 20 movies by movie ranking with number of ratings 
+train_set %>% dplyr::count(movieId) %>% 
+  left_join(movie_averages) %>%
+  left_join(movie_titles, by = "movieId") %>%
+  arrange(b_i) %>% 
+  select(title, b_i, n) %>% 
+  slice(1:20) %>% 
+  kable(caption = "Worst 20 Movie Effects and Frequency of Ratings") %>%
+  kable_styling(font_size = 10)
+```
+\
+
+The next model attempted to account for the differences in the number of observations across movies and users. Regularization involves the application of a weight to the movie and user effects to control for differences in the number of ratings per movie and user. Movie and user averages based on a small number of ratings are penalized more than averages based on a large number of ratings in order to account for differences in the confidence in these estimates. Accordingly, this model includes regularized movie and regularized user effects.  
+
+This model can be represented with the following formula, with  
+
+*	$\mu$, $\epsilon_{u,i}$, $b_i$, and $b_u$ the same as above  
+* $\lambda_i$ and $\lambda_u$ equal to the penalized least square estimate weights for the movie and user effects  
+
+Lambda is a tuning parameter that must be selected. The optimal lambda was selected based on the resulting RMSE in the test set. Figure 17 shows a plot of possible lambda coefficients against the resulting RMSE. Based on these results, lambda is set to 4.75.
+
+``` {r model 4 - regularized movie and user effects, echo = FALSE}
+# define lambda to determine the optimal parameter 
+lambdas <- seq(0, 10, 0.25)
+
+# train the model 
+rmses <- sapply(lambdas, function(l){
+  mu <- mean(train_set$rating)
+  b_i <- train_set %>% 
+    group_by(movieId) %>%
+    summarize(b_i = sum(rating - mu)/(n()+l))
+  b_u <- train_set %>% 
+    left_join(b_i, by = "movieId") %>%
+    group_by(userId) %>%
+    summarize(b_u = sum(rating - mu - b_i)/(n()+l))
+  predicted_ratings <- test_set %>% 
+    left_join(b_i, by = "movieId") %>%
+    left_join(b_u, by = "userId") %>%
+    mutate(pred = mu + b_i + b_u) %>%
+    .$pred
+  return(RMSE(predicted_ratings, test_set$rating))
+})
+
+# determine the optimal lambda
+data1 <- data.frame(lambdas, rmses)
+data1 %>% ggplot(aes(lambdas, rmses)) +
+  geom_point(color = "#00abff") +
+  xlab("Lambdas") +
+  ylab("RMSEs") +
+  theme_light() +
+  ggtitle("Figure 17: Selection of Optimal Lambda") +
+  theme(axis.title.x = element_text(vjust = -3)) +
+  theme(axis.title.y = element_text(angle = 90, vjust = 3)) +
+  theme(plot.title = element_text(size = 15, vjust = 5, hjust = 0.5)) +
+  theme(plot.margin = unit(c(1,1,1,1), "cm"))
+
+lambda <- lambdas[which.min(rmses)]
+```
+\
+
+Table 15 displays the results of all the models. The fourth model now takes into account the variability in average movies and user ratings, as well as the variability in the frequencies upon which these averages are based. With these two predictors and their regularized weighting, the accuracy has improved slightly to 0.86428. Nevertheless, the addition of other predictors may improve the model.
+
+``` {r model 4 - results, echo = FALSE}
+# add the results to the table comparing different models 
+results_rmse <- bind_rows(results_rmse,
+                          data_frame(method = "Model #4 - Regularized Movie & User Effects", 
+                                     RMSE = min(rmses)))
+results_rmse %>% 
+  kable(caption = "Results of Predictive Models in the Test Dataset", align = "c") %>%
+  kable_styling(font_size = 10)
+```
+\
+
 ## Time Effects  
+
+
+
 
 ## Genre Effects  
 
+
+
 # Results on Validation Set  
+
+The final model included ...
+
+The final model can therefore be represented with the following formula
+
+Table XX displays the results of the final model on the validation dataset (i.e., final hold-out valdiation dataset). 
+
+
 
 # Discussion  
 
@@ -724,10 +1020,11 @@ edx %>% group_by(genres) %>%
 
 ```
 
-
 # Appendix  
 
+This project and code were completed using the following specifications:  
+
 ```{r print environment, echo = FALSE}
-print("Operating System and R Version Information")
+print("Operating System and R Version")
 version
 ```
