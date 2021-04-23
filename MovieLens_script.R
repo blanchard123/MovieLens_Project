@@ -69,7 +69,7 @@ rm(dl, ratings, movies, test_index, temp, movielens, removed)
 ########################################################################
 
 # Save edx and validation datasets
-save(edx, file="edx.RData")
+save(edx, file = "edx.RData")
 save(validation, file = "validation.RData")
 
 
@@ -77,9 +77,6 @@ save(validation, file = "validation.RData")
 #################### LOAD LIBRARIES ####################
 
 # Load additional libraries 
-if(!require(caretEnsemble)) install.packages("caretEnsemble", repos = "http://cran.us.r-project.org")
-if(!require(dplyr)) install.packages("dplyr", repos = "http://cran.us.r-project.org")
-if(!require(gam)) install.packages("gam", repos = "http://cran.us.r-project.org")
 if(!require(ggplot2)) install.packages("ggplot2", repos = "http://cran.us.r-project.org")
 if(!require(ggthemes)) install.packages("ggthemes", repos = "http://cran.us.r-project.org")
 if(!require(gridExtra)) install.packages("gridExtra", repos = "http://cran.us.r-project.org")
@@ -88,13 +85,10 @@ if(!require(knitr)) install.packages("knitr", repos = "http://cran.us.r-project.
 if(!require(lubridate)) install.packages("lubridate", repos = "http://cran.us.r-project.org")
 if(!require(markdown)) install.packages("markdown", repos = "http://cran.us.r-project.org")
 if(!require(matrixStats)) install.packages("matrixStats", repos = "http://cran.us.r-project.org")
-if(!require(randomForest)) install.packages("randomForest", repos = "http://cran.us.r-project.org")
-if(!require(Rborist)) install.packages("Rborist", repos = "http://cran.us.r-project.org")
 if(!require(scales)) install.packages("scales", repos = "http://cran.us.r-project.org")
 if(!require(stringr)) install.packages("stringr", repos = "http://cran.us.r-project.org")
+if(!require(dplyr)) install.packages("dplyr", repos = "http://cran.us.r-project.org")
 
-library(caretEnsemble)
-library(gam)
 library(ggplot2)
 library(ggthemes)
 library(gridExtra)
@@ -103,8 +97,6 @@ library(kableExtra)
 library(lubridate)
 library(markdown)
 library(matrixStats)
-library(randomForest)
-library(Rborist)
 library(scales)
 library(stringr)
 library(dplyr)
@@ -113,7 +105,8 @@ library(dplyr)
 
 #################### BASIC DATA EXPLORATION #################### 
 
-options(digits = 5)
+# set digits to 6
+options(digits = 6)
 
 # basic identification of data and variables 
 str(edx, strict.width="cut")
@@ -272,11 +265,37 @@ edx %>%
 
 ########## Exploration of time effects ########## 
 
+# extracting the release date of each movie
+edx <- edx %>% mutate(date_released = str_extract(edx$title, "\\((\\d{4})\\)"))
+edx <- edx %>% mutate(date_released = str_extract(edx$date_released, "(\\d{4})"))
+edx <- edx %>% mutate(year_released = as.numeric(date_released))
+
 # transform timestamp to date of rating 
-edx_dates <- edx %>% mutate(date_rated = as_datetime(timestamp))
+edx <- edx %>% mutate(date_rated = as_datetime(timestamp))
+
+# calculating the difference between release date and rating date
+edx <- edx %>% mutate(year_rated = year(date_rated)) %>%
+  mutate(relative_rating_age = year_rated - as.numeric(year_released))
+
+# creating the year and month of rating
+edx <- edx %>% 
+  mutate(year_rated = round_date(date_rated, unit = "year")) %>%
+  mutate(month_rated = round_date(date_rated, unit = "month"))
+
+# save the changes to the dataset
+save(edx, file = "edx.RData")
+
+# examine for errors in extracting the date of release 
+edx %>% filter(date_released >= 2011) %>% 
+  group_by(movieId, title, date_released) %>% 
+  summarize(n = n())
+
+edx %>% filter(date_released <= 1900) %>% 
+  group_by(movieId, title, date_released) %>% 
+  summarize(n = n())
 
 # plot of average rating by week of rating
-plot1<- edx_dates %>% 
+plot1 <- edx %>% 
   mutate(week_rated = round_date(date_rated, unit = "week")) %>%
   group_by(week_rated) %>%
   summarize(average = mean(rating)) %>%
@@ -293,7 +312,7 @@ plot1<- edx_dates %>%
   theme(plot.margin = unit(c(1,1,1,1), "cm"))
 
 # plot of average rating by month of rating
-plot2 <- edx_dates %>% 
+plot2 <- edx %>% 
   mutate(month_rated = round_date(date_rated, unit = "month")) %>%
   group_by(month_rated) %>%
   summarize(average = mean(rating)) %>%
@@ -310,7 +329,7 @@ plot2 <- edx_dates %>%
   theme(plot.margin = unit(c(1,1,1,1), "cm"))
 
 # plot of average rating by year of rating
-plot3 <- edx_dates %>% 
+plot3 <- edx %>% 
   mutate(year_rated = round_date(date_rated, unit = "year")) %>%
   group_by(year_rated) %>%
   summarize(average = mean(rating)) %>%
@@ -330,7 +349,7 @@ plot3 <- edx_dates %>%
 grid.arrange(plot1, plot2, plot3, top="Figure 6: Average Rating Across Time")
 
 # plot of frequency of ratings by year of rating
-edx_dates %>%
+edx %>%
   group_by(movieId) %>%
   summarize(number = n(), year = as.character(first(year_rated))) %>% 
   ggplot(aes(x = year, y = number)) +
@@ -347,28 +366,8 @@ edx_dates %>%
   theme(plot.margin = unit(c(1,1,1,1), "cm")) +
   theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
-# extracting the release date of each movie
-edx_dates <- edx_dates %>% mutate(date_released = str_extract(edx$title, "\\((\\d{4})\\)"))
-edx_dates <- edx_dates %>% mutate(date_released = str_extract(edx_dates$date_released, "(\\d{4})"))
-edx_dates <- edx_dates %>% mutate(year_released = as.numeric(date_released))
-
-# calculating the difference between release date and rating date #####################################################
-edx_dates <- edx_dates %>% mutate(year_rated = year(date_rated)) %>%
-  mutate(relative_rating_age = year_rated - as.numeric(year_released))
-
-save(edx_dates, file = "edx_dates.RData")
-
-# examine for errors in extracting the date of release 
-edx_dates %>% filter(date_released >= 2011) %>% 
-  group_by(movieId, title, date_released) %>% 
-  summarize(n = n())
-
-edx_dates %>% filter(date_released <= 1900) %>% 
-  group_by(movieId, title, date_released) %>% 
-  summarize(n = n())
-
 # plot of frequency of ratings by date of release
-edx_dates %>%
+edx %>%
   group_by(movieId) %>%
   summarize(number = n(), year = as.character(first(year_released))) %>% 
   ggplot(aes(x = year, y = number)) +
@@ -386,7 +385,7 @@ edx_dates %>%
   theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
 # plot of average ratings by date of release
-edx_dates %>%
+edx %>%
   group_by(year_released) %>%
   summarize(average = mean(rating)) %>% 
   ggplot(aes(x = year_released, y = average)) +
@@ -405,7 +404,7 @@ edx_dates %>%
   theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
 # plot of average rating by rating per year 
-edx_dates %>%
+edx %>%
   group_by(movieId) %>%
   summarize(n = n(), years = 2010 - first(year_released),
             title = title[1],
@@ -427,7 +426,7 @@ edx_dates %>%
   theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
 # table of top movies by ratings per year 
-edx_dates %>% 
+edx %>% 
   group_by(movieId) %>%
   summarize(n = n(), years = 2010 - first(year_released),
             title = title[1],
@@ -439,7 +438,7 @@ edx_dates %>%
   kable_styling(font_size = 10)
 
 # table of least movies by ratings per year 
-edx_dates %>% 
+edx %>% 
   group_by(movieId) %>%
   summarize(n = n(), years = 2010 - first(year_released),
             title = title[1],
@@ -451,7 +450,7 @@ edx_dates %>%
   kable_styling(font_size = 10)
 
 # plot of frequency of ratings by relative age of rating
-edx_dates %>%
+edx %>%
   group_by(movieId) %>% 
   summarize(number = n(), average_year = mean(relative_rating_age)) %>% 
   ggplot(aes(x = average_year, y = number)) +
@@ -469,7 +468,7 @@ edx_dates %>%
   theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
 # plot of average of ratings by relative age of rating
-edx_dates %>%
+edx %>%
   group_by(movieId) %>%
   summarize(average = mean(rating), average_year = mean(relative_rating_age)) %>% 
   ggplot(aes(x = average_year, y = average)) +
@@ -625,7 +624,7 @@ mu
 model_1_rmse <- RMSE(test_set$rating, mu)
 
 # create a table to store and compare results of the different models 
-results_rmse <- data.frame(method = "Model #1 - Average", RMSE = model_1_rmse)
+results_rmse <- data.frame(Method = "Model #1 - Average", RMSE = model_1_rmse)
 
 results_rmse %>% 
   kable(caption = "Results of Predictive Model in the Test Dataset", align = "c") %>%
@@ -650,7 +649,7 @@ model_2_rmse <- RMSE(predicted_ratings, test_set$rating)
 
 # add the results to the table comparing different models 
 results_rmse <- bind_rows(results_rmse,
-                          data.frame(method = "Model #2 - Movie Effects", RMSE = model_2_rmse))
+                          data.frame(Method = "Model #2 - Movie Effects", RMSE = model_2_rmse))
 
 results_rmse %>% 
   kable(caption = "Results of Predictive Models in the Test Dataset", align = "c") %>%
@@ -677,7 +676,7 @@ model_3_rmse <- RMSE(predicted_ratings, test_set$rating)
 
 # add the results to the table comparing different models 
 results_rmse <- bind_rows(results_rmse,
-                          data.frame(method = "Model #3 - Movie & User Effects", RMSE = model_3_rmse))
+                          data.frame(Method = "Model #3 - Movie & User Effects", RMSE = model_3_rmse))
 results_rmse %>% 
   kable(caption = "Results of Predictive Models in the Test Dataset", align = "c") %>%
   kable_styling(font_size = 10)
@@ -767,7 +766,7 @@ lambda
 
 # add the results to the table comparing different models 
 results_rmse <- bind_rows(results_rmse,
-                          data_frame(method = "Model #4 - Regularized Movie & User Effects", 
+                          data_frame(Method = "Model #4 - Regularized Movie & User Effects", 
                                      RMSE = min(rmses)))
 results_rmse %>% 
   kable(caption = "Results of Predictive Models in the Test Dataset", align = "c") %>%
@@ -775,26 +774,148 @@ results_rmse %>%
 
 
 
-########## Model 5 - Reg. Movie and User and Time Effects ########## 
+########## Model 5 - Adding Age of Movie Effects ########## 
+
+# train the model 
+movie_reg_averages <- train_set %>% 
+  group_by(movieId) %>%
+  summarize(b_i = sum(rating - mu)/(n()+lambda))
+user_reg_averages <- train_set %>% 
+  left_join(movie_reg_averages, by = "movieId") %>%
+  group_by(userId) %>%
+  summarize(b_u = sum(rating - mu - b_i)/(n()+lambda))
+movie_age_averages <- train_set %>%
+  left_join(movie_reg_averages, by = "movieId") %>%
+  left_join(user_reg_averages, by = "userId") %>%
+  group_by(year_released) %>%
+  summarize(b_am = sum(rating - mu - b_i - b_u)/n())
+
+# examine the performance of the model in the test set 
+predicted_ratings <- test_set %>% 
+  left_join(movie_reg_averages, by = "movieId") %>%
+  left_join(user_reg_averages, by = "userId") %>%
+  left_join(movie_age_averages, by = "year_released") %>%
+  mutate(pred = mu + b_i + b_u + b_am) %>%
+  .$pred
+
+model_5_rmse <- RMSE(predicted_ratings, test_set$rating)
+
+# add the results to the table comparing different models 
+results_rmse <- bind_rows(results_rmse,
+                          data.frame(Method = "Model #5 - Adding Age of Movie Effects", 
+                                     RMSE = model_5_rmse))
+results_rmse %>% 
+  kable(caption = "Results of Predictive Models in the Test Dataset", align = "c") %>%
+  kable_styling(font_size = 10)
+
+
+
+########## Model 6 - Adding Age of Rating Effects ########## 
+
+# train the model 
+rating_age_averages <- train_set %>%
+  left_join(movie_reg_averages, by = "movieId") %>%
+  left_join(user_reg_averages, by = "userId") %>%
+  left_join(movie_age_averages, by = "year_released") %>%
+  group_by(month_rated) %>%
+  summarize(b_ar = sum(rating - mu - b_i - b_u - b_am)/n())
+
+# examine the performance of the model in the test set 
+predicted_ratings <- test_set %>% 
+  left_join(movie_reg_averages, by = "movieId") %>%
+  left_join(user_reg_averages, by = "userId") %>%
+  left_join(movie_age_averages, by = "year_released") %>%
+  left_join(rating_age_averages, by = "month_rated") %>%
+  mutate(pred = mu + b_i + b_u + b_am + b_ar) %>%
+  .$pred
+
+model_6_rmse <- RMSE(predicted_ratings, test_set$rating)
+
+# add the results to the table comparing different models 
+results_rmse <- bind_rows(results_rmse,
+                          data.frame(Method = "Model #6 - Adding Age of Rating Effects", 
+                                     RMSE = model_6_rmse))
+results_rmse %>% 
+  kable(caption = "Results of Predictive Models in the Test Dataset", align = "c") %>%
+  kable_styling(font_size = 10)
+
+
+
+########## Model 7 - Adding Genre Effects ########## 
+
+# train the model 
+genre_averages <- train_set %>%
+  left_join(movie_reg_averages, by = "movieId") %>%
+  left_join(user_reg_averages, by = "userId") %>%
+  left_join(movie_age_averages, by = "year_released") %>%
+  left_join(rating_age_averages, by = "month_rated") %>%
+  group_by(genres) %>%
+  summarize(b_g = sum(rating - mu - b_i - b_u - b_am - b_ar)/n())
+
+# examine the performance of the model in the test set 
+predicted_ratings <- test_set %>% 
+  left_join(movie_reg_averages, by = "movieId") %>%
+  left_join(user_reg_averages, by = "userId") %>%
+  left_join(movie_age_averages, by = "year_released") %>%
+  left_join(rating_age_averages, by = "month_rated") %>%
+  left_join(genre_averages, by = "genres") %>%
+  mutate(pred = mu + b_i + b_u + b_am + b_ar + b_g) %>%
+  .$pred
+
+model_7_rmse <- RMSE(predicted_ratings, test_set$rating)
+
+# add the results to the table comparing different models 
+results_rmse <- bind_rows(results_rmse,
+                          data.frame(Method = "Model #7 - Adding Genre Effects", 
+                                     RMSE = model_7_rmse))
+results_rmse %>% 
+  kable(caption = "Results of Predictive Models in the Test Dataset", align = "c") %>%
+  kable_styling(font_size = 10)
 
 
 
 
+#################### RESULTS IN VALIDATION DATASET ####################
 
-########## Model 6 - Reg. Movie and User and Time and Genre Effects ########## 
+# transform timestamp to date of rating 
+validation <- validation %>% mutate(date_rated = as_datetime(timestamp))
+
+# creating the year and month of rating
+validation <- validation %>% 
+  mutate(year_rated = round_date(date_rated, unit = "year")) %>%
+  mutate(month_rated = round_date(date_rated, unit = "month"))
+
+# extracting the release date of each movie
+validation <- validation %>% mutate(date_released = str_extract(validation$title, "\\((\\d{4})\\)"))
+validation <- validation %>% mutate(date_released = str_extract(validation$date_released, "(\\d{4})"))
+validation <- validation %>% mutate(year_released = as.numeric(date_released))
+
+save(validation, file = "validation.RData")
+
+# testing the final model in the validation set
+predicted_ratings <- validation %>% 
+  left_join(movie_reg_averages, by = "movieId") %>%
+  left_join(user_reg_averages, by = "userId") %>%
+  left_join(movie_age_averages, by = "year_released") %>%
+  left_join(rating_age_averages, by = "month_rated") %>%
+  left_join(genre_averages, by = "genres") %>%
+  mutate(pred = mu + b_i + b_u + b_am + b_ar + b_g) %>%
+  .$pred
+
+valid_rmse <- RMSE(predicted_ratings, validation$rating)
+
+results_rmse <- bind_rows(results_rmse, 
+                          data.frame(Method = "Final Model - Validation Results" , RMSE = valid_rmse))
+results_rmse %>%
+  kable(caption = "Results of Final Predictive Model in the Validation Dataset", align = "c") %>%
+  kable_styling(font_size = 10)
 
 
+#################### APPENDIX ####################
 
-
-
-
-
-
-
-
-
-
-
+# print operating system and R version 
+print("Operating System and R Version")
+version
 
 
 
