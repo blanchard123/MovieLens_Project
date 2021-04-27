@@ -108,13 +108,19 @@ library(dplyr)
 # set digits to 6
 options(digits = 6)
 
-# basic identification of data and variables 
+# basic identification of data and variable types 
 str(edx, strict.width="cut")
 str(validation, strict.width="cut")
 
+# only examining the edx dataset
+
+# look at edx dataset as a table 
 as_tibble(edx) %>% slice(1:10) %>% 
-  kable(caption = "Examination of the edx Data Structure", align = "c") %>%
-  kable_styling(font_size = 10, latex_options = "scale_down")
+  kbl(caption = "Examination of the edx Data Structure", align = "c") %>%
+  row_spec(0, bold = T) %>%
+  kable_classic(full_width = F) %>%
+  kable_styling(latex_options = "hold_position", font_size = 10) %>%
+  kable_styling(latex_options = "scale_down")
 
 # number of rows and columns
 dim(edx)
@@ -125,16 +131,20 @@ summary(edx)
 # number of different users and movies
 edx %>% summarize(n_users = n_distinct(userId),
                   n_movies = n_distinct(movieId)) %>% 
-  kable(col.names = c("Users", "Movies"), align = "c", 
-        caption = "Distinct Users and Movies") %>%
-  kable_styling(font_size = 10, latex_options = "scale_down")
+  kbl(col.names = c("Users", "Movies"), 
+      caption = "Number of Users and Movies", align = "c") %>%
+  row_spec(0, bold = T) %>%
+  kable_classic(full_width = F) %>%
+  kable_styling(latex_options = "hold_position", font_size = 10)
 
 # table of number of each rating in descending order 
 edx %>% group_by(rating) %>% 
   summarize(number = n()) %>% 
   arrange(desc(number)) %>%
-  kable(align = "c", caption = "Frequency of Most Common Ratings") %>%
-  kable_styling(font_size = 10, latex_options = "scale_down")
+  kbl(caption = "Frequency of Ratings", align = "c") %>%
+  row_spec(0, bold = T) %>%
+  kable_classic(full_width = F) %>%
+  kable_styling(latex_options = "hold_position", font_size = 10)
 
 # plot of frequency of ratings
 edx %>%
@@ -143,12 +153,12 @@ edx %>%
   scale_y_continuous(labels = comma, breaks = pretty_breaks(n = 10)) +
   scale_x_continuous(breaks = pretty_breaks(n = 10)) +
   xlab("Rating") +
-  ylab("Frequency of Ratings") +
+  ylab("Frequency") +
   theme_light() +
   ggtitle("Figure 1: Frequency Distribution of Ratings") +
   theme(axis.title.x = element_text(vjust = -3)) +
   theme(axis.title.y = element_text(angle = 90, vjust = 3)) +
-  theme(plot.title = element_text(size = 15, vjust = 5, hjust = 0.5)) +
+  theme(plot.title = element_text(size = 12, vjust = 5, hjust = 0.5)) +
   theme(plot.margin = unit(c(1,1,1,1), "cm"))
 
 
@@ -160,16 +170,20 @@ edx %>% group_by(movieId, title) %>%
   summarise(number = n()) %>%
   arrange(desc(number)) %>%
   head(10) %>%
-  kable(caption = "Top 10 Most Rated Movies") %>%
-  kable_styling(font_size = 10, latex_options = "scale_down")
+  kbl(caption = "Most Rated Movies", align = "clc") %>%
+  row_spec(0, bold = T, align = "c") %>%
+  kable_classic(full_width = F) %>%
+  kable_styling(latex_options = "hold_position", font_size = 10)
 
-# movies with the fewest number of ratings
+# movies with the least number of ratings
 edx %>% group_by(movieId, title) %>% 
   summarise(number = n()) %>%
   arrange(number) %>%
   head(10) %>%
-  kable(caption = "Top 10 Most Rated Movies") %>%
-  kable_styling(font_size = 10, latex_options = "scale_down")
+  kbl(caption = "Least Rated Movies", align = "clc") %>%
+  row_spec(0, bold = T, align = "c") %>%
+  kable_classic(full_width = F) %>%
+  kable_styling(latex_options = "hold_position", font_size = 10)
 
 # plot of frequency of movie ratings
 edx %>%
@@ -185,7 +199,7 @@ edx %>%
   ggtitle("Figure 2: Frequency of Movie Ratings (log scale)") +
   theme(axis.title.x = element_text(vjust = -3)) +
   theme(axis.title.y = element_text(angle = 90, vjust = 3)) +
-  theme(plot.title = element_text(size = 15, vjust = 5, hjust = 0.5)) +
+  theme(plot.title = element_text(size = 12, vjust = 5, hjust = 0.5)) +
   theme(plot.margin = unit(c(1,1,1,1), "cm"))
 
 # plot of frequency of average movie rating
@@ -203,7 +217,7 @@ edx %>%
   ggtitle("Figure 3: Frequency of Average Movie Rating") +
   theme(axis.title.x = element_text(vjust = -3)) +
   theme(axis.title.y = element_text(angle = 90, vjust = 3)) +
-  theme(plot.title = element_text(size = 15, vjust = 5, hjust = 0.5)) +
+  theme(plot.title = element_text(size = 12, vjust = 5, hjust = 0.5)) +
   theme(plot.margin = unit(c(1,1,1,1), "cm"))
 
 
@@ -215,16 +229,20 @@ edx %>% group_by(userId) %>%
   summarise(number = n()) %>%
   arrange(desc(number)) %>%
   head(10) %>%
-  kable(caption = "Top 10 Users with the Most Ratings") %>%
-  kable_styling(font_size = 10, latex_options = "scale_down")
+  kbl(caption = "Most Active Users", align = "c") %>%
+  row_spec(0, bold = T) %>%
+  kable_classic(full_width = F) %>%
+  kable_styling(latex_options = "hold_position", font_size = 10)
 
-# users with the fewest number of ratings
+# users with the least number of ratings
 edx %>% group_by(userId) %>% 
   summarise(number = n()) %>%
   arrange(number) %>%
   head(10) %>%
-  kable(caption = "Top 10 Users with the Least Ratings") %>%
-  kable_styling(font_size = 10, latex_options = "scale_down")
+  kbl(caption = "Least Active Users", align = "c") %>%
+  row_spec(0, bold = T) %>%
+  kable_classic(full_width = F) %>%
+  kable_styling(latex_options = "hold_position", font_size = 10)
 
 # plot of the frequency of user ratings
 edx %>%
@@ -240,7 +258,7 @@ edx %>%
   ggtitle("Figure 4: Frequency of User Ratings (log scale)") +
   theme(axis.title.x = element_text(vjust = -3)) +
   theme(axis.title.y = element_text(angle = 90, vjust = 3)) +
-  theme(plot.title = element_text(size = 15, vjust = 5, hjust = 0.5)) +
+  theme(plot.title = element_text(size = 12, vjust = 5, hjust = 0.5)) +
   theme(plot.margin = unit(c(1,1,1,1), "cm"))
 
 # plot of the frequency of average user rating
@@ -258,12 +276,14 @@ edx %>%
   ggtitle("Figure 5: Frequency of Average User Rating") +
   theme(axis.title.x = element_text(vjust = -3)) +
   theme(axis.title.y = element_text(angle = 90, vjust = 3)) +
-  theme(plot.title = element_text(size = 15, vjust = 5, hjust = 0.5)) +
+  theme(plot.title = element_text(size = 12, vjust = 5, hjust = 0.5)) +
   theme(plot.margin = unit(c(1,1,1,1), "cm"))
 
 
 
 ########## Exploration of time effects ########## 
+
+### data tranformations to the dates ###
 
 # extracting the release date of each movie
 edx <- edx %>% mutate(date_released = str_extract(edx$title, "\\((\\d{4})\\)"))
@@ -294,59 +314,7 @@ edx %>% filter(date_released <= 1900) %>%
   group_by(movieId, title, date_released) %>% 
   summarize(n = n())
 
-# plot of average rating by week of rating
-plot1 <- edx %>% 
-  mutate(week_rated = round_date(date_rated, unit = "week")) %>%
-  group_by(week_rated) %>%
-  summarize(average = mean(rating)) %>%
-  ggplot(aes(x = week_rated, y = average)) +
-  geom_point(alpha = 0.75) +
-  geom_smooth(method = "loess") +
-  scale_y_continuous(breaks = pretty_breaks(n = 10)) +
-  xlab("Date of Rating Rounded to Week") +
-  ylab("Average Rating") +
-  theme_light() +
-  theme(axis.title.x = element_text(vjust = -3)) +
-  theme(axis.title.y = element_text(angle = 90, vjust = 3)) +
-  theme(plot.title = element_text(size = 15, vjust = 5, hjust = 0.5)) +
-  theme(plot.margin = unit(c(1,1,1,1), "cm"))
-
-# plot of average rating by month of rating
-plot2 <- edx %>% 
-  mutate(month_rated = round_date(date_rated, unit = "month")) %>%
-  group_by(month_rated) %>%
-  summarize(average = mean(rating)) %>%
-  ggplot(aes(x = month_rated, y = average)) +
-  geom_point(alpha = 0.75) +
-  geom_smooth(method = "loess") +
-  scale_y_continuous(breaks = pretty_breaks(n = 10)) +
-  xlab("Date of Rating Rounded to Month") +
-  ylab("Average Rating") +
-  theme_light() +
-  theme(axis.title.x = element_text(vjust = -3)) +
-  theme(axis.title.y = element_text(angle = 90, vjust = 3)) +
-  theme(plot.title = element_text(size = 15, vjust = 5, hjust = 0.5)) +
-  theme(plot.margin = unit(c(1,1,1,1), "cm"))
-
-# plot of average rating by year of rating
-plot3 <- edx %>% 
-  mutate(year_rated = round_date(date_rated, unit = "year")) %>%
-  group_by(year_rated) %>%
-  summarize(average = mean(rating)) %>%
-  ggplot(aes(x = year_rated, y = average)) +
-  geom_point(alpha = 0.75) +
-  geom_smooth(method = "loess") +
-  scale_y_continuous(breaks = pretty_breaks(n = 10)) +
-  xlab("Date of Rating Rounded to Year") +
-  ylab("Average Rating") +
-  theme_light() +
-  theme(axis.title.x = element_text(vjust = -3)) +
-  theme(axis.title.y = element_text(angle = 90, vjust = 3)) +
-  theme(plot.title = element_text(size = 15, vjust = 5, hjust = 0.5)) +
-  theme(plot.margin = unit(c(1,1,1,1), "cm"))
-
-# arrange plot1, plot2, and plot3 to be presented together 
-grid.arrange(plot1, plot2, plot3, top="Figure 6: Average Rating Across Time")
+### examine time effects ###
 
 # plot of frequency of ratings by year of rating
 edx %>%
@@ -355,16 +323,68 @@ edx %>%
   ggplot(aes(x = year, y = number)) +
   geom_boxplot(color = "black", fill = "#00abff") +
   scale_y_sqrt(labels = comma, breaks = pretty_breaks(n = 10)) +
-  scale_x_discrete(breaks = pretty_breaks(n = 10)) +
+  scale_x_discrete() +
   xlab("Year of Rating") +
-  ylab("Frequency of Ratings for Each Movie") +
+  ylab("Frequency of Ratings per Movie") +
   theme_light() +
-  ggtitle("Figure 7: Frequency of Ratings per Movie by Year of Rating") +
+  ggtitle("Figure 6: Frequency of Ratings per Movie by Year of Rating") +
   theme(axis.title.x = element_text(vjust = -3)) +
   theme(axis.title.y = element_text(angle = 90, vjust = 3)) +
-  theme(plot.title = element_text(size = 15, vjust = 5, hjust = 0.5)) +
+  theme(plot.title = element_text(size = 12, vjust = 5, hjust = 0.5)) +
   theme(plot.margin = unit(c(1,1,1,1), "cm")) +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+# plot of average rating by week of rating
+plot1 <- edx %>% mutate(week_rated = round_date(date_rated, unit = "week")) %>%
+  group_by(week_rated) %>%
+  summarize(average = mean(rating)) %>%
+  ggplot(aes(x = week_rated, y = average)) +
+  geom_point(alpha = 0.75) +
+  geom_smooth(method = "loess") +
+  scale_y_continuous(breaks = pretty_breaks(n = 10)) +
+  xlab("Day of Rating") +
+  ylab("Average Rating") +
+  theme_light() +
+  theme(axis.title.x = element_text(vjust = -3)) +
+  theme(axis.title.y = element_text(angle = 90, vjust = 3)) +
+  theme(plot.title = element_text(size = 12, vjust = 5, hjust = 0.5)) +
+  theme(plot.margin = unit(c(1,1,1,1), "cm"))
+
+# plot of average rating by month of rating
+plot2 <- edx %>% mutate(month_rated = round_date(date_rated, unit = "month")) %>%
+  group_by(month_rated) %>%
+  summarize(average = mean(rating)) %>%
+  ggplot(aes(x = month_rated, y = average)) +
+  geom_point(alpha = 0.75) +
+  geom_smooth(method = "loess") +
+  scale_y_continuous(breaks = pretty_breaks(n = 10)) +
+  xlab("Week of Rating") +
+  ylab("Average Rating") +
+  theme_light() +
+  theme(axis.title.x = element_text(vjust = -3)) +
+  theme(axis.title.y = element_text(angle = 90, vjust = 3)) +
+  theme(plot.title = element_text(size = 12, vjust = 5, hjust = 0.5)) +
+  theme(plot.margin = unit(c(1,1,1,1), "cm"))
+
+# plot of average rating by year of rating
+plot3 <- edx %>% mutate(year_rated = round_date(date_rated, unit = "year")) %>%
+  group_by(year_rated) %>%
+  summarize(average = mean(rating)) %>%
+  ggplot(aes(x = year_rated, y = average)) +
+  geom_point(alpha = 0.75) +
+  geom_smooth(method = "loess") +
+  scale_y_continuous(breaks = pretty_breaks(n = 10)) +
+  xlab("Year of Rating") +
+  ylab("Average Rating") +
+  theme_light() +
+  theme(axis.title.x = element_text(vjust = -3)) +
+  theme(axis.title.y = element_text(angle = 90, vjust = 3)) +
+  theme(plot.title = element_text(size = 12, vjust = 5, hjust = 0.5)) +
+  theme(plot.margin = unit(c(1,1,1,1), "cm"))
+
+# arrange plot1, plot2, and plot3 to be presented together 
+grid.arrange(plot1, plot2, plot3, heights = 5,
+             top = "Figure 7: Average Rating Across Time")
 
 # plot of frequency of ratings by date of release
 edx %>%
@@ -380,9 +400,8 @@ edx %>%
   ggtitle("Figure 8: Frequency of Ratings by Release Year") +
   theme(axis.title.x = element_text(vjust = -3)) +
   theme(axis.title.y = element_text(angle = 90, vjust = 3)) +
-  theme(plot.title = element_text(size = 15, vjust = 5, hjust = 0.5)) +
-  theme(plot.margin = unit(c(1,1,1,1), "cm")) +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  theme(plot.title = element_text(size = 12, vjust = 5, hjust = 0.5)) +
+  theme(plot.margin = unit(c(1,1,1,1), "cm"))
 
 # plot of average ratings by date of release
 edx %>%
@@ -399,9 +418,8 @@ edx %>%
   ggtitle("Figure 9: Average Rating by Release Year") +
   theme(axis.title.x = element_text(vjust = -3)) +
   theme(axis.title.y = element_text(angle = 90, vjust = 3)) +
-  theme(plot.title = element_text(size = 15, vjust = 5, hjust = 0.5)) +
-  theme(plot.margin = unit(c(1,1,1,1), "cm")) +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  theme(plot.title = element_text(size = 12, vjust = 5, hjust = 0.5)) +
+  theme(plot.margin = unit(c(1,1,1,1), "cm"))
 
 # plot of average rating by rating per year 
 edx %>%
@@ -421,9 +439,8 @@ edx %>%
   ggtitle("Figure 10: Average Rating by Ratings per Year") +
   theme(axis.title.x = element_text(vjust = -3)) +
   theme(axis.title.y = element_text(angle = 90, vjust = 3)) +
-  theme(plot.title = element_text(size = 15, vjust = 5, hjust = 0.5)) +
-  theme(plot.margin = unit(c(1,1,1,1), "cm")) +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  theme(plot.title = element_text(size = 12, vjust = 5, hjust = 0.5)) +
+  theme(plot.margin = unit(c(1,1,1,1), "cm"))
 
 # table of top movies by ratings per year 
 edx %>% 
@@ -434,8 +451,11 @@ edx %>%
   mutate(rate = n/years) %>%
   top_n(10, rate) %>%
   arrange(desc(rate)) %>%
-  kable(caption = "Movies with the Most ratings per Year") %>%
-  kable_styling(font_size = 10)
+  kbl(caption = "Movies with the Most Ratings per Year", align = "ccclcc") %>%
+  row_spec(0, bold = T, align = "c") %>%
+  kable_classic(full_width = F) %>%
+  kable_styling(latex_options = "hold_position", font_size = 10) %>%
+  kable_styling(latex_options = "scale_down")
 
 # table of least movies by ratings per year 
 edx %>% 
@@ -446,8 +466,11 @@ edx %>%
   mutate(rate = n/years) %>%
   top_n(-10, rate) %>%
   arrange(rate) %>%
-  kable(caption = "Movies with the Least Ratings per Year") %>%
-  kable_styling(font_size = 10)
+  kbl(caption = "Movies with the Least Ratings per Year", align = "ccclcc") %>%
+  row_spec(0, bold = T, align = "c") %>%
+  kable_classic(full_width = F) %>%
+  kable_styling(latex_options = "hold_position", font_size = 10) %>%
+  kable_styling(latex_options = "scale_down")
 
 # plot of frequency of ratings by relative age of rating
 edx %>%
@@ -460,12 +483,11 @@ edx %>%
   xlab("Average Relative Age of Rating") +
   ylab("Frequency of Ratings") +
   theme_light() +
-  ggtitle("Figure 11: Frequency of Ratings by Avergae Relative Age of Rating") +
+  ggtitle("Figure 11: Frequency of Ratings by Average Relative Age of Rating") +
   theme(axis.title.x = element_text(vjust = -3)) +
   theme(axis.title.y = element_text(angle = 90, vjust = 3)) +
-  theme(plot.title = element_text(size = 15, vjust = 5, hjust = 0.5)) +
-  theme(plot.margin = unit(c(1,1,1,1), "cm")) +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  theme(plot.title = element_text(size = 12, vjust = 5, hjust = 0.5)) +
+  theme(plot.margin = unit(c(1,1,1,1), "cm"))
 
 # plot of average of ratings by relative age of rating
 edx %>%
@@ -482,9 +504,8 @@ edx %>%
   ggtitle("Figure 12: Average Rating by Average Relative Age of Rating") +
   theme(axis.title.x = element_text(vjust = -3)) +
   theme(axis.title.y = element_text(angle = 90, vjust = 3)) +
-  theme(plot.title = element_text(size = 15, vjust = 5, hjust = 0.5)) +
-  theme(plot.margin = unit(c(1,1,1,1), "cm")) +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  theme(plot.title = element_text(size = 12, vjust = 5, hjust = 0.5)) +
+  theme(plot.margin = unit(c(1,1,1,1), "cm"))
 
 
 
@@ -495,8 +516,10 @@ edx %>% group_by(genres) %>%
   summarize(number = n(), average = mean(rating)) %>%
   arrange(desc(number)) %>%
   slice(1:10) %>%
-  kable(caption = "Number and Average Rating by Overall Genre Combination") %>%
-  kable_styling(font_size = 10)
+  kbl(caption = "Ratings by Overall Genre Combination", align = "lcc") %>%
+  row_spec(0, bold = T, align = "c") %>%
+  kable_classic(full_width = F) %>%
+  kable_styling(latex_options = "hold_position", font_size = 10)
 
 # plot of the number of rating by overall genre combination (for genres with n >= 1000)
 edx %>% group_by(genres) %>%
@@ -512,7 +535,7 @@ edx %>% group_by(genres) %>%
   ggtitle("Figure 13: Frequency of Ratings by Overall Genre Combination") +
   theme(axis.title.x = element_text(vjust = -3)) +
   theme(axis.title.y = element_text(angle = 90, vjust = 3)) +
-  theme(plot.title = element_text(size = 15, vjust = 5, hjust = 0.5)) +
+  theme(plot.title = element_text(size = 12, vjust = 5, hjust = 0.5)) +
   theme(plot.margin = unit(c(1,1,1,1), "cm")) +
   theme(axis.text.x = element_blank())
 
@@ -531,20 +554,23 @@ edx %>% group_by(genres) %>%
   ggtitle("Figure 14: Average Rating by Overall Genre Combination") +
   theme(axis.title.x = element_text(vjust = -3)) +
   theme(axis.title.y = element_text(angle = 90, vjust = 3)) +
-  theme(plot.title = element_text(size = 15, vjust = 5, hjust = 0.5)) +
+  theme(plot.title = element_text(size = 12, vjust = 5, hjust = 0.5)) +
   theme(plot.margin = unit(c(1,1,1,1), "cm")) +
   theme(axis.text.x = element_blank())
 
-# table of number of ratings and average rating by separate movie genres (CAUTION slow code)
+# table of number of ratings and average rating by separate movie genres
+### CAUTION slow code ###
 edx %>% separate_rows(genres, sep = "\\|") %>%
   group_by(genres) %>%
   summarize(number = n(), average = mean(rating)) %>%
   arrange(desc(number)) %>%
-  kable(caption = "Number and Average Rating by Individual Genre Tags") %>%
-  kable_styling(font_size = 10)
+  kbl(caption = "Ratings by Individual Genre Tags", align = "lcc") %>%
+  row_spec(0, bold = T, align = "c") %>%
+  kable_classic(full_width = F) %>%
+  kable_styling(latex_options = "hold_position", font_size = 10)
 
-
-# plot of number of ratings by separate movie genres (CAUTION slow code)
+# plot of number of ratings by separate movie genres 
+### CAUTION slow code ###
 edx %>% separate_rows(genres, sep = "\\|") %>%
   group_by(genres) %>%
   summarize(number = n()) %>%
@@ -552,18 +578,19 @@ edx %>% separate_rows(genres, sep = "\\|") %>%
   ggplot(aes(genres, number)) + 
   geom_bar(aes(fill = genres), stat = "identity") +
   scale_y_continuous(labels = comma, breaks = pretty_breaks(n = 10)) +
-  xlab("Individual Genres") +
+  xlab("Individual Genre Tags") +
   ylab("Frequency of Ratings") +
   theme_light() +
   ggtitle("Figure 15: Frequency of Ratings per Individual Genres") +
   theme(axis.title.x = element_text(vjust = -3)) +
   theme(axis.title.y = element_text(angle = 90, vjust = 3)) +
-  theme(plot.title = element_text(size = 15, vjust = 5, hjust = 0.5)) +
+  theme(plot.title = element_text(size = 12, vjust = 5, hjust = 0.5)) +
   theme(plot.margin = unit(c(1,1,1,1), "cm")) +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1)) + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
   theme(legend.position = "none")
 
-# plot of average ratings by separate movie genres (CAUTION slow code)
+# plot of average ratings by separate movie genres
+### CAUTION slow code ###
 edx %>% separate_rows(genres, sep = "\\|") %>%
   group_by(genres) %>%
   summarize(n = n(), average = mean(rating), se = sd(rating)/sqrt(n())) %>%
@@ -573,15 +600,15 @@ edx %>% separate_rows(genres, sep = "\\|") %>%
   geom_point(color = "#00abff") +
   geom_errorbar(color = "Black") + 
   scale_y_continuous(breaks = pretty_breaks(n = 10)) +
-  xlab("Individual Genres") +
+  xlab("Individual Genre Tags") +
   ylab("Average Rating") +
   theme_light() +
   ggtitle("Figure 16: Average Rating per Individual Genres") +
   theme(axis.title.x = element_text(vjust = -3)) +
   theme(axis.title.y = element_text(angle = 90, vjust = 3)) +
-  theme(plot.title = element_text(size = 15, vjust = 5, hjust = 0.5)) +
+  theme(plot.title = element_text(size = 12, vjust = 5, hjust = 0.5)) +
   theme(plot.margin = unit(c(1,1,1,1), "cm")) +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 
 
@@ -593,7 +620,7 @@ edx %>% separate_rows(genres, sep = "\\|") %>%
 
 # partition the edx dataset into training and test sets
 set.seed(85, sample.kind = "Rounding")
-test_index <- createDataPartition(y = edx$rating, times = 1, p = 0.2, list = FALSE)
+test_index <- createDataPartition(y = edx$rating, times = 1, p = 0.1, list = FALSE)
 
 train_set <- edx[-test_index,]
 test_set <- edx[test_index,]
@@ -617,8 +644,7 @@ RMSE <- function(true_ratings, predicted_ratings){
 ########## Model 1 - Average only ########## 
 
 # train the model 
-mu <- mean(train_set$rating) 
-mu
+mu <- mean(train_set$rating)
 
 # examine the performance of the model in the test set
 model_1_rmse <- RMSE(test_set$rating, mu)
@@ -627,8 +653,10 @@ model_1_rmse <- RMSE(test_set$rating, mu)
 results_rmse <- data.frame(Method = "Model #1 - Average", RMSE = model_1_rmse)
 
 results_rmse %>% 
-  kable(caption = "Results of Predictive Model in the Test Dataset", align = "c") %>%
-  kable_styling(font_size = 10)
+  kbl(caption = "Results in the Test Dataset", align = "lc") %>%
+  row_spec(0, bold = T, align = "c") %>%
+  kable_classic(full_width = F) %>%
+  kable_styling(latex_options = "hold_position", font_size = 10)
 
 
 
@@ -652,8 +680,10 @@ results_rmse <- bind_rows(results_rmse,
                           data.frame(Method = "Model #2 - Movie Effects", RMSE = model_2_rmse))
 
 results_rmse %>% 
-  kable(caption = "Results of Predictive Models in the Test Dataset", align = "c") %>%
-  kable_styling(font_size = 10)
+  kbl(caption = "Results in the Test Dataset", align = "lc") %>%
+  row_spec(0, bold = T, align = "c") %>%
+  kable_classic(full_width = F) %>%
+  kable_styling(latex_options = "hold_position", font_size = 10)
 
 
 
@@ -678,54 +708,44 @@ model_3_rmse <- RMSE(predicted_ratings, test_set$rating)
 results_rmse <- bind_rows(results_rmse,
                           data.frame(Method = "Model #3 - Movie & User Effects", RMSE = model_3_rmse))
 results_rmse %>% 
-  kable(caption = "Results of Predictive Models in the Test Dataset", align = "c") %>%
-  kable_styling(font_size = 10)
+  kbl(caption = "Results in the Test Dataset", align = "lc") %>%
+  row_spec(0, bold = T, align = "c") %>%
+  kable_classic(full_width = F) %>%
+  kable_styling(latex_options = "hold_position", font_size = 10)
 
 
 
 ########## Movie 4 - Regularized Movie and User Effects ########## 
 
-# examine errors in prediction from the movie model 
-test_set %>% left_join(movie_averages, by = 'movieId') %>%
-  mutate(residual = rating - (mu + b_i)) %>%
-  arrange(desc(abs(residual))) %>%
-  slice(1:20) %>% 
-  select(title, residual)
-
-# create a new dataset to examine errors in prediction from movie effects model
+# create a new dataset to examine errors in prediction from Movie effects model
 movie_titles <- edx %>% 
   select(movieId, title) %>%
   distinct()
 
 # table of top 20 movies by movie effect with number of ratings 
-movie_averages %>% left_join(movie_titles, by = "movieId") %>%
-  arrange(desc(b_i)) %>% 
-  select(title, b_i) %>% 
-  slice(1:20)
-
 train_set %>% dplyr::count(movieId) %>% 
   left_join(movie_averages) %>%
   left_join(movie_titles, by="movieId") %>%
   arrange(desc(b_i)) %>% 
   select(title, b_i, n) %>% 
-  slice(1:20) %>% 
-  kable(caption = "Best 20 Movie Effects and Frequency of Ratings") %>%
-  kable_styling(font_size = 10)
+  slice(1:10) %>% 
+  kbl(caption = "Best 10 Movie Effects and Frequency of Ratings", align = "lcc") %>%
+  row_spec(0, bold = T, align = "c") %>%
+  kable_classic(full_width = F) %>%
+  kable_styling(latex_options = "hold_position", font_size = 10)
 
 # table of worst 20 movies by movie ranking with number of ratings 
-movie_averages %>% left_join(movie_titles, b = "movieId") %>%
-  arrange(b_i) %>% 
-  select(title, b_i) %>% 
-  slice(1:20)
-
 train_set %>% dplyr::count(movieId) %>% 
   left_join(movie_averages) %>%
   left_join(movie_titles, by = "movieId") %>%
   arrange(b_i) %>% 
   select(title, b_i, n) %>% 
-  slice(1:20) %>% 
-  kable(caption = "Worst 20 Movie Effects and Frequency of Ratings") %>%
-  kable_styling(font_size = 10)
+  slice(1:10) %>% 
+  kbl(caption = "Worst 10 Movie Effects and Frequency of Ratings", align = "lcc") %>%
+  row_spec(0, bold = T, align = "c") %>%
+  kable_classic(full_width = F) %>%
+  kable_styling(latex_options = "hold_position", font_size = 10)
+
 
 # define lambda to determine the optimal parameter 
 lambdas <- seq(0, 10, 0.25)
@@ -758,7 +778,7 @@ data1 %>% ggplot(aes(lambdas, rmses)) +
   ggtitle("Figure 17: Selection of Optimal Lambda") +
   theme(axis.title.x = element_text(vjust = -3)) +
   theme(axis.title.y = element_text(angle = 90, vjust = 3)) +
-  theme(plot.title = element_text(size = 15, vjust = 5, hjust = 0.5)) +
+  theme(plot.title = element_text(size = 12, vjust = 5, hjust = 0.5)) +
   theme(plot.margin = unit(c(1,1,1,1), "cm"))
 
 lambda <- lambdas[which.min(rmses)]
@@ -766,11 +786,13 @@ lambda
 
 # add the results to the table comparing different models 
 results_rmse <- bind_rows(results_rmse,
-                          data_frame(Method = "Model #4 - Regularized Movie & User Effects", 
+                          data.frame(Method = "Model #4 - Regularized Movie & User Effects", 
                                      RMSE = min(rmses)))
 results_rmse %>% 
-  kable(caption = "Results of Predictive Models in the Test Dataset", align = "c") %>%
-  kable_styling(font_size = 10)
+  kbl(caption = "Results in the Test Dataset", align = "lc") %>%
+  row_spec(0, bold = T, align = "c") %>%
+  kable_classic(full_width = F) %>%
+  kable_styling(latex_options = "hold_position", font_size = 10)
 
 
 
@@ -805,8 +827,10 @@ results_rmse <- bind_rows(results_rmse,
                           data.frame(Method = "Model #5 - Adding Age of Movie Effects", 
                                      RMSE = model_5_rmse))
 results_rmse %>% 
-  kable(caption = "Results of Predictive Models in the Test Dataset", align = "c") %>%
-  kable_styling(font_size = 10)
+  kbl(caption = "Results in the Test Dataset", align = "lc") %>%
+  row_spec(0, bold = T, align = "c") %>%
+  kable_classic(full_width = F) %>%
+  kable_styling(latex_options = "hold_position", font_size = 10)
 
 
 
@@ -836,8 +860,10 @@ results_rmse <- bind_rows(results_rmse,
                           data.frame(Method = "Model #6 - Adding Age of Rating Effects", 
                                      RMSE = model_6_rmse))
 results_rmse %>% 
-  kable(caption = "Results of Predictive Models in the Test Dataset", align = "c") %>%
-  kable_styling(font_size = 10)
+  kbl(caption = "Results in the Test Dataset", align = "lc") %>%
+  row_spec(0, bold = T, align = "c") %>%
+  kable_classic(full_width = F) %>%
+  kable_styling(latex_options = "hold_position", font_size = 10)
 
 
 
@@ -869,8 +895,10 @@ results_rmse <- bind_rows(results_rmse,
                           data.frame(Method = "Model #7 - Adding Genre Effects", 
                                      RMSE = model_7_rmse))
 results_rmse %>% 
-  kable(caption = "Results of Predictive Models in the Test Dataset", align = "c") %>%
-  kable_styling(font_size = 10)
+  kbl(caption = "Results in the Test Dataset", align = "lc") %>%
+  row_spec(0, bold = T, align = "c") %>%
+  kable_classic(full_width = F) %>%
+  kable_styling(latex_options = "hold_position", font_size = 10)
 
 
 
@@ -904,19 +932,23 @@ predicted_ratings <- validation %>%
 
 valid_rmse <- RMSE(predicted_ratings, validation$rating)
 
+# add the results to the table comparing different models 
 results_rmse <- bind_rows(results_rmse, 
-                          data.frame(Method = "Final Model - Validation Results" , RMSE = valid_rmse))
+                          data.frame(Method = "Final Model - Validation Results", 
+                                     RMSE = valid_rmse))
 results_rmse %>%
-  kable(caption = "Results of Final Predictive Model in the Validation Dataset", align = "c") %>%
-  kable_styling(font_size = 10)
+  kbl(caption = "Final Results in the Validation Dataset", align = "lc") %>%
+  row_spec(0, bold = T, align = "c") %>%
+  row_spec(8, bold = T) %>%
+  kable_classic(full_width = F) %>%
+  kable_styling(latex_options = "hold_position", font_size = 10)
+
+
 
 
 #################### APPENDIX ####################
 
-# print operating system and R version 
-print("Operating System and R Version")
+# print operating system and R version
 version
-
-
 
 
