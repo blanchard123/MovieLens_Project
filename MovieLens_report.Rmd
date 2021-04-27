@@ -5,58 +5,54 @@ date: "May 2, 2021"
 output: 
   pdf_document:
     toc: true
-    toc_depth: 3
+    toc_depth: 2
     number_sections: true
     highlight: tango
-
+    fig_height: 3.75
 ---
 \pagebreak
 
 # Overview  
 
-Based roughly on the Netflix challenge (https://www.netflixprize.com), this project aimed to develop a machine learning algorithm to predict movie ratings using the publicly available MovieLens dataset (https://movielens.org) collected by GroupLens Research. The dataset contains 10 million user ratings of over 10,000 different movies. The aim of the project was to develop a predictive algorithm that would result in the lowest root mean squared error (RMSE) in a partitioned validation dataset. In particular, this report details the installation, cleaning, and exploration of the MovieLens data, as well as the development and evaluation of several predictive models.  
+Based roughly on the Netflix challenge (https://www.netflixprize.com), this project aimed to develop a machine learning algorithm to predict movie ratings using the publicly available MovieLens dataset collected by GroupLens Research (https://movielens.org). The dataset contains 10 million user ratings of over 10,000 different movies. The aim of the project was to develop a predictive algorithm that would result in the lowest root mean squared error (RMSE) in a partitioned validation dataset. In particular, this report details the installation, cleaning, and exploration of the MovieLens data, as well as the development and evaluation of several predictive models. The code complete code for this project is available in the supplemental materials.  
 
 ## Introduction  
 
-Recommendation systems utilize user generated ratings of items in order to provide specific recommendations for other items. Many companies use recommendation systems in their pursuits. Typically, companies that sell products or services to a large volume of customers and also allow customers to rate these items or services are then able to amass extremely large datasets of user ratings. These datasets can then be used to develop algorithms used to make predictions of specific user ratings for given items. The use of these algorithms allows the companies to make specific item recommendations to specific users that the users is likely to rate highly or prefer. Recommendation systems are used in a variety of areas including movies, books, articles, and social media by many well-known companies including Amazon, Netflix, Spotify and Twitter.  
+Recommendation systems utilize user generated ratings of items in order to provide specific recommendations for other items. Many companies use recommendation systems in their pursuits. Typically, companies that sell products or services to a large volume of customers and also allow customers to rate these items are then able to amass extremely large datasets of user ratings. These datasets can subsequently be used to develop algorithms used to make predictions of specific user ratings for given items. The use of these algorithms allows the companies to make specific item recommendations to specific users that the users is likely to rate highly. Recommendation systems are used in a variety of areas including movies, books, articles, and social media by many well-known companies including Amazon, Netflix, Spotify and Twitter.  
 
 Recommendation systems are a common machine learning application. For instance, Netflix uses an advanced machine learning algorithm to provide media recommendations. The Netflix prize was an open competition announced in 2006 to the data science community. The goal was to find the best filtering algorithm to predict how much a user is going to enjoy a show or movie based on prior movie ratings; the company aimed to find an algorithm that would improve their current system by at least 10%. The $1 million prize was awarded in 2009 to the team “BellKor’s Pragmatic Chaos” using an advance ensemble of machine learning techniques (https://www.netflixprize.com/assets/GrandPrize2009_BPC_BellKor.pdf).  
 
 ## Aim of the Project  
 
-This project aimed to accomplish a similar feat to the Netflix challenge. Specifically, the aim was to develop an efficient movie recommendation algorithm using machine learning techniques on the MovieLens dataset. The utility of the algorithm is based on the resultant loss function.  
+This project aimed to accomplish a similar feat to the Netflix challenge. Specifically, the aim was to develop an efficient movie recommendation algorithm using machine learning techniques on the MovieLens dataset. The utility of the algorithm was based on the resultant loss function in the validation dataset.  
 
 ## Specific Requirements of the Project  
 
-The 10M version of the MovieLens data will be used in order to develop a predictive model. The dataset will be separated into a training set (edx) and a test set (final hold-out validation set). The final predictive model will be evaluated based on its performance in the final hold-out validation set.  
+The 10M version of the MovieLens data was used in order to develop a predictive model. The dataset was first separated into a the edx dataset, used to develop the predictive model, and a validation dataset (i.e., the final hold-out validation set), used to test the final model. The final predictive model was evaluated based on its performance in the final hold-out validation set.  
 
-The loss function used to evaluate the predictive algorithm is the root mean square error (RMSE), which is a common metric of distance between the predicted and observed values. Values of RMSE will be used to evaluate the accuracy of the predictive models during the training phase and used to determine the overall accuracy of the final model using the validation set. As a measure of distance between predicted and observed values, lower values of RMSE indicate more accurate predictions. The specific RMSE formula used in this project is provided here:  
+The loss function used to evaluate the predictive algorithm was the root mean square error (RMSE), which is a common metric of distance between predicted and observed values. Values of RMSE were used to evaluate the accuracy of the predictive models during the training phase and to determine the overall accuracy of the final model using the validation dataset. As a measure of distance between predicted and observed values, lower values of RMSE indicate more accurate predictions. The specific RMSE formula used in this project is provided here:  
 
 $$ RMSE = \sqrt{\frac{1}{N} \displaystyle\sum_{u,i} (\hat{y}_{u,i} - y_{u,i})^{2}} $$  
 
 ## Dataset  
 
-MovieLens is an online service that provides movie recommendations to its users, as well as conducts online experiments related to recommendation system and interfaces. For this project the 10M MovieLens dataset will be used (https://grouplens.org/datasets/movielens/10m/). This dataset contains over 10 million movies ratings for 10,681 unique movies by 71,567 users of the online service. Users were selected at random to be included in the dataset provided that they had rated at least 20 movies. 
+MovieLens is an online service that provides movie recommendations to its users, as well as conducts online experiments related to recommendation systems and interfaces. For this project the 10M MovieLens dataset was used (https://grouplens.org/datasets/movielens/10m/). This dataset contains over 10 million movies ratings for 10,681 unique movies by 71,567 users of the online service. Users were selected at random to be included in the dataset provided that they had rated at least 20 movies. 
 
-Information from MovieLens regarding the dataset reveals the following features:  
+Information from MovieLens regarding the dataset reveals the following features:
 
-* No user information is provided in the dataset; all users have been anonymized and assigned a unique UserID code.  
-* Ratings are made on a 5-star scale system, which includes half-star increments (i.e., scale extends from 0.5 to 5.0 with increments of 0.5).  
-* The timestamp of each rating is included and represents the number of seconds since midnight Universal Time (UTC) of January 1, 1970.  
-* MovieID numbers are provided directly by MovieLens, while movie titles are entered manually in the format found on IMBD which includes the year of release in parentheses following the title.  
-* Genre information is stored in a pipe-separated list representing the relevant combination of the following 19 genre options: action, adventure, animation, children’s, comedy, crime, documentary, drama, fantasy, film-noir, horror, musical, mystery, romance, sci-fi, thriller, war, western.  
-\
+* No user information is provided in the dataset; all users have been anonymized and assigned a unique UserId code.
+* Ratings are made on a 5-star system, which includes half-star increments (i.e., the scale extends from 0.5 to 5.0 with increments of 0.5).
+* The timestamp of each rating is included and represents the number of seconds from midnight Universal Time (UTC) of January 1, 1970, to the time the rating was made.
+* MovieId numbers are provided directly by MovieLens, while movie titles are entered manually in the format found on IMBD which includes the year of release in parentheses following the title.
+* Genre information is stored in a pipe-separated list representing the relevant combination of the following 19 genre options: action, adventure, animation, children’s, comedy, crime, documentary, drama, fantasy, film-noir, horror, musical, mystery, romance, sci-fi, thriller, war, and western.  
+
+\pagebreak
 
 # Data Wrangling  
 
-The code to download and create the dataset was provided by the HarvardX PH125.9x Data Science Capstone course (see the complete code for the project in the supplemental code file).
+The code to download and create the dataset was provided by the HarvardX PH125.9x Data Science Capstone course (see the complete code for this project in the supplemental code file). Code was also provided by the course to partition the MovieLens dataset into two subsets: the edx dataset (90%) and the final hold-out validation dataset (10%).The provided code also ensured that there were no users and/or movies in the validation dataset that do not appear in the edx dataset.  
 
-Code was also provided by the course to partition the MovieLens dataset into two subsets: the edx dataset (90%) and the final hold-out validation dataset (10%).  
-
-1. The edx dataset will be used for exploratory data analysis, testing different models, and developing the predictive algorithm.  
-2. The validation dataset will only be used to test the accuracy of the final predictive model, and the overall accuracy of the model will be based on the resulting RMSE from this dataset.  
-
-In order to ensure that we do not include users and/or movies in the validation data that do not appear in the edx data, we need to remove those entries using the code porovided by the course.  
+Notably, the edx dataset will be used for exploratory data analysis, testing different models, and developing the predictive algorithm; it will be split into training and test datsets for building the predictive model. In contrast, the validation dataset will only be used to test the accuracy of the final predictive model, and the overall accuracy of the model will be based on the resulting RMSE from the validation dataset.  
 
 ```{r install data, echo = FALSE, warning = FALSE, message = FALSE}
 
@@ -151,40 +147,46 @@ options(digits = 6)
 
 ## Data Inspection  
 
-After wrangling the data using the provided code, it can be seen that the edx and validation datasets both contain the aforementioned six variables (i.e., userID, movieID, rating, timestamp, title, and genres). Notably, the outcome of interest that we are interested in predicting is the movie rating variable. The edx dataset contains 9,000,055 ratings, while the validation dataset contains 999,999 ratings. This is consistent with our partitioning of the data (i.e., 90% to edx and 10% to validation). 
-\
+After wrangling the data using the provided code, it can be seen that the edx and validation datasets both contain the aforementioned six variables (i.e., userId, movieId, rating, timestamp, title, and genres). Notably, the outcome of interest that we are interested in predicting is the movie rating variable. The edx dataset contains 9,000,055 ratings, while the validation dataset contains 999,999 ratings. This is consistent with our partitioning of the MovieLens data (i.e., 90% to edx and 10% to validation).  
 
 ```{r basic identification of edx variables, echo = FALSE}
+print("edx dataset")
 str(edx, strict.width="cut")
 ```
 \
 
 ```{r basic identification of validation variables, echo = FALSE}
+print("validation dataset")
 str(validation, strict.width="cut")
 ```
 \
 
-Looking at Table 1, it is apparent that each row represents a single rating from a single user for a single movie. As the validation dataset will only be used to test the final model, we examine the edx dataset in more detail. Looking at the data, several important features are immediately apparent:  
+Looking at Table 1, it is apparent that each row represents a single rating from a single user for a single movie. As the validation dataset will only be used to test the final model, only the edx dataset will be examined in detail. Looking at the data, several important features are immediately apparent:
 
-* The userID and movieID variables are stored as interger and numeric variables, respectively; these variabels shoud be treated as factors or grouping variabels in much of the analyses. 
-* As the timestamp represents the seconds since midnight UTC January 1, 1970, and is stored as an interger variabels in the daatset; it will likely require some transformation or careful processing in order be used in any models.  
-* As the movie titles are entered with the year of release in parentheses following the title as a character string, the year will need to be extracted in order to be used in any models.  
+* The userId and movieId variables are stored as integer and numeric variables, respectively; these variables should be treated as factors or grouping variables in much of the analyses.
+* As the timestamp represents the seconds since midnight UTC January 1, 1970, to the time of the rating and is stored as an integer variable; it will likely require some transformation or careful processing.
+* As the movie titles are entered as a character string with the year of release in parentheses following the title, the year will need to be extracted from this variable in order to be used in any models.
 * As the genre is stored in a pipe-separated list representing the relevant combination of 19 genre options, there are several manners in which this variable could be treated; for instance, the overall combinations could be considered separate categories or the individual genre options could be considered features of each applicable movie.  
-\
 
 ```{r table of edx variables, echo = FALSE}
 as_tibble(edx) %>% slice(1:10) %>% 
-  kable(caption = "Examination of the edx Data Structure", align = "c") %>%
-  kable_styling(font_size = 10, latex_options = "scale_down")
+  kbl(caption = "Examination of the edx Data Structure", align = "c") %>%
+  row_spec(0, bold = T) %>%
+  kable_classic(full_width = F) %>%
+  kable_styling(latex_options = "hold_position", font_size = 10) %>%
+  kable_styling(latex_options = "scale_down")
 ```
 \
 
 ## Data Transformations  
 
-Based on the current state of the variables, several tranformations of the data were undertaken. First, the timestamp variable was transformed from a the seconds since midnight UTC January 1, 1970, into a date variable. Converting this variable to represent the date of the rating will aid in the exmaination and interpretation of the effectof timing of the rating. Second, the date of the movie release was extracted from the title variable. In ther current form, with the date incldued in the title variable as a string of characters, the variable does not facilitate the exmaination of any effects of the age of the movie. As a result, the dates were extracted into a seperate variable hat represetns the year the movie was first released. Finally, the difference between the yearof the rating and the year of the movie release were calcuated based on the above two new variables. Thus, this variabels represents the number of years between the movie release and user rating of the movie. The code to complete these transformations is available in the supplemental file. After running this code, the data was checked for invalid and missing dates. 
+Based on the current state of the variables, several tranformations of the data were undertaken. First, the timestamp variable was transformed from the seconds since midnight UTC January 1, 1970, into a date variable. Converting this variable to represent the date of the rating will aid in the examination and interpretation of any possible effect of timing of the ratings.  
 
-In addition, the dataset could be converted from its current format in which a given row represents a single rating from a single user for a single movie. The dataset could be presented as a large matrix with users represented in the rows and movies represented in the columns. However, this dataset would be quite sprase, containing many missing values, as each user has not rated every single movie (i.e., 69,878 users have rated 10,677 movies). Moreover, due to the size of the edx dataset, reformatting the dataframe into this format would be relatively time consuming and require considerable memory. As such, the dataset was not converted into this matrix format. 
-\
+Second, the date of the movie release was extracted from the title variable. In the current form, with the date included in the title (a character string variable), the variable does not facilitate the examination of any possible effect of the age of the movie. As a result, the dates were extracted into a seperate variable that represents the year the movie was first released.   
+
+Finally, the difference between the year of the rating and the year of the movie release were calculated based on the above two variables. Thus, this variable represents the number of years between the movie release and user rating of the movie. The code to complete these transformations is available in the supplemental file. After running this code, the data was checked for invalid and missing dates, as well as other errors.  
+
+In addition, the dataset could be converted from its current format in which a given row represents a single rating from a single user for a single movie. The dataset could be presented as a large matrix with users represented in the rows and movies represented in the columns. However, this dataset would be quite sparse, containing many missing values, as each user has not rated every single movie (i.e., 69,878 users have rated 10,677 movies). Moreover, due to the size of the edx dataset, reformatting the dataset into this format would be considerably time consuming and require considerable memory. As such, the dataset was not converted into this matrix format (see the "Limitations" section). 
 
 ``` {r date and time transformations, echo = FALSE}
 # transform timestamp to date of rating 
@@ -208,38 +210,35 @@ save(edx, file = "edx.RData")
 ```
 \
 
+\pagebreak
+
 # Exploratory Data Analysis  
 
-The dataset contains a number of variables that could be used to predict ratings:  
-
-* Movie effects: movies may have an impact on ratings  
-* User effects: users may have an impact on ratings  
-* Time (movie) effects: date of the movie release (i.e., year of release) may impact ratings  
-* Time (rating) effects: date of the ratings (i.e., date the rating was made) may impact ratings  
-* Time (relative) effects: relative age of ratings (i.e., years between release and rating) may impact ratings  
-* Genre effects: movie genres may have an impact on the ratings  
-
-Table 2 presents the number of unique users and unique movies in the edx dataset. These values are slightly lower than the total number of unique users and movies in the edx dataset described above, which is consistent with the data partitioning into the edx and valdiation datasets.
+Table 2 presents the number of unique users and unique movies in the edx dataset. Although, the dataset contains nearly 70,000 user rating of over 10,000 movies, these values are slightly lower than the total number of unique users and movies in the MovieLens dataset described above, which is consistent with the data being partitioning into the edx (90%) and valdiation (10%) datasets.  
 
 ```{r number of users and movies, echo = FALSE}
 # number of different users and movies
 edx %>% summarize(n_users = n_distinct(userId),
                  n_movies = n_distinct(movieId)) %>% 
-  kable(col.names = c("Users", "Movies"), align = "c", 
-        caption = "Distinct Users and Movies") %>%
-  kable_styling(font_size = 10)
+  kbl(col.names = c("Users", "Movies"), 
+      caption = "Number of Users and Movies", align = "c") %>%
+  row_spec(0, bold = T) %>%
+  kable_classic(full_width = F) %>%
+  kable_styling(latex_options = "hold_position", font_size = 10)
 ```
 \
 
-As seen in Table 3 and Figure 1, users tend to rate movies rather favorably. The minimum rating is 0.5 and the maximum is 5.0. Generally, whole-star ratings are more common than half-star ratings. The most common rating is 4.0 and the next most common 3.0, while ratings of 0.5 and 1.5 are relatively rare. The mean rating is 3.512, the median is 4.000, and the standard deviation is 1.060.
+Table 3 shows the frequency of each rating in descending order. From this table, we see that the minimum rating is 0.5 and the maximum is 5.0, with 4.0 being the most common rating. As well, Figure 1 displays the distrubtion of ratings. As seen, users tend to rate movies rather favourably. Generally, whole-star ratings are more common than half-star ratings. Generally, the most common ratings (in descending order) are 4.0, 3.0, and 5.0, while ratings of 0.5 and 1.5 are relatively rare. In particular, the mean rating is 3.512, the median is 4.000, and the standard deviation is 1.060.  
 
 ```{r table of ratings distribution, echo = FALSE}
 # table of number of each rating in descending order 
 edx %>% group_by(rating) %>% 
   summarize(number = n()) %>% 
   arrange(desc(number)) %>%
-  kable(align = "c", caption = "Frequency of Most Common Ratings") %>%
-  kable_styling(font_size = 10)
+  kbl(caption = "Frequency of Ratings", align = "c") %>%
+  row_spec(0, bold = T) %>%
+  kable_classic(full_width = F) %>%
+  kable_styling(latex_options = "hold_position", font_size = 10)
 ```
 \
 
@@ -251,19 +250,28 @@ edx %>%
   scale_y_continuous(labels = comma, breaks = pretty_breaks(n = 10)) +
   scale_x_continuous(breaks = pretty_breaks(n = 10)) +
   xlab("Rating") +
-  ylab("Frequency of Ratings") +
+  ylab("Frequency") +
   theme_light() +
   ggtitle("Figure 1: Frequency Distribution of Ratings") +
   theme(axis.title.x = element_text(vjust = -3)) +
   theme(axis.title.y = element_text(angle = 90, vjust = 3)) +
-  theme(plot.title = element_text(size = 15, vjust = 5, hjust = 0.5)) +
+  theme(plot.title = element_text(size = 12, vjust = 5, hjust = 0.5)) +
   theme(plot.margin = unit(c(1,1,1,1), "cm"))
 ```
 \
 
+Overall, the dataset contains a number of variables that might be useful in predicting ratings:
+
+* Movies may have an impact on ratings
+* Users may have an impact on ratings
+* Year of release may impact ratings
+* Date of the rating may impact ratings
+* Movie genre may impact ratings  
+
 ## Movie Effects  
 
-Figure 2 presents the frequency at which each movie was rated. The graph shows ratings in log scale for ease of presentation. Based on this histogram, we can see that some movies are rated much more frequently than others, with some movies receiving only a single rating and other receiving over 30,000 ratings. In general, the majority of movies have received between 10 and 1000 ratings. Notably, 125 movies have only been rated a single time. This variability is exemplified in Tables 4 and 5, which present the most and least rated movies based on overall frequency of ratings. The variability in the number of ratings per movie may have an important impact in the development of our predictive model, as the estimates of the average movie rating will be based on substantially different numbers of ratings. The averages based on low numbers of ratings provide poorer estimates of the true means compared to those based on a large number of ratings.  
+Figure 2 presents the frequency at which each movie was rated, specifically showing the frequency of ratings by frequency of movies. The graph shows ratings in log scale to highlight the pattern. Based on this histogram, we can see that some movies are rated much more frequently than others, with some movies receiving only a single rating and other receiving over 30,000 ratings. In general, the majority of movies have received somewhere between 10 and 1000 ratings.  
+\
 
 ``` {r frequency of movie ratings, echo = FALSE}
 # plot of frequency of movie ratings
@@ -280,34 +288,13 @@ edx %>%
   ggtitle("Figure 2: Frequency of Movie Ratings (log scale)") +
   theme(axis.title.x = element_text(vjust = -3)) +
   theme(axis.title.y = element_text(angle = 90, vjust = 3)) +
-  theme(plot.title = element_text(size = 15, vjust = 5, hjust = 0.5)) +
+  theme(plot.title = element_text(size = 12, vjust = 5, hjust = 0.5)) +
   theme(plot.margin = unit(c(1,1,1,1), "cm"))
 ```
 \
 
-``` {r most rated movies, echo = FALSE, message = FALSE}
-# movies with the greatest number of ratings
-edx %>% group_by(movieId, title) %>% 
-  summarise(number = n()) %>%
-  arrange(desc(number)) %>%
-  head(10) %>%
-  kable(caption = "Most Rated Movies") %>%
-  kable_styling(font_size = 10)
-```
+As well, Figure 3 presents the average movie rating (for movies that have been rated at least 100 times). In general, most movies have an average rating between 2.5 and 4.0; however, as seen in the graph, there is considerable varition in the average movie rating. That is, movies differ substantially in their average ratings. Some movies tend to receive much lower (or higher) ratings than others. Due to the variability in average movie rating, the predictive models may benefit from including a term to represent a movie effect or bias.  
 \
-
-``` {r least rated movies, echo = FALSE, message = FALSE}
-# movies with the least number of ratings
-edx %>% group_by(movieId, title) %>% 
-  summarise(number = n()) %>%
-  arrange(number) %>%
-  head(10) %>%
-  kable(caption = "Least Rated Movies") %>%
-  kable_styling(font_size = 10)
-```
-\
-
-As well, Figure 3 presents the average movie rating (for movies that have been rated at least 100 times). Most movies have an average rating between 3.0 and 4.0; however there is considerable varition in the average movie rating. That is, from the graph, it is evident that movies differ substantially in their ratings. Some movies tend to receive much lower ratings compared to others. Thus, a movie effect may be useful in the predictive models.  
 
 ``` {r frequency of average movie ratings, echo = FALSE}
 # plot of frequency of average movie rating
@@ -325,16 +312,42 @@ edx %>%
   ggtitle("Figure 3: Frequency of Average Movie Rating") +
   theme(axis.title.x = element_text(vjust = -3)) +
   theme(axis.title.y = element_text(angle = 90, vjust = 3)) +
-  theme(plot.title = element_text(size = 15, vjust = 5, hjust = 0.5)) +
+  theme(plot.title = element_text(size = 12, vjust = 5, hjust = 0.5)) +
   theme(plot.margin = unit(c(1,1,1,1), "cm"))
+```
+\
+
+Although average ratings vary across movies, the frequency upon which each of these averages is based also varies considerably. As seen in Figure 2, some movies have received relatively few ratings compared to others. Notably, 125 movies have only been rated a single time. The variability in the frequency at which each movie has been rated is exemplified in Tables 4 and 5, which present the most and least rated movies. The variability in the number of ratings per movie may have an important impact in the development of our predictive model, as estimates of the average movie ratings will be based on substantially different numbers of ratings. The averages based on low numbers of ratings provide poorer estimates of the true means compared to those based on a large number of ratings.  
+
+``` {r most rated movies, echo = FALSE, message = FALSE}
+# movies with the greatest number of ratings
+edx %>% group_by(movieId, title) %>% 
+  summarise(number = n()) %>%
+  arrange(desc(number)) %>%
+  head(10) %>%
+  kbl(caption = "Most Rated Movies", align = "clc") %>%
+  row_spec(0, bold = T, align = "c") %>%
+  kable_classic(full_width = F) %>%
+  kable_styling(latex_options = "hold_position", font_size = 10)
+```
+\
+
+``` {r least rated movies, echo = FALSE, message = FALSE}
+# movies with the least number of ratings
+edx %>% group_by(movieId, title) %>% 
+  summarise(number = n()) %>%
+  arrange(number) %>%
+  head(10) %>%
+  kbl(caption = "Least Rated Movies", align = "clc") %>%
+  row_spec(0, bold = T, align = "c") %>%
+  kable_classic(full_width = F) %>%
+  kable_styling(latex_options = "hold_position", font_size = 10)
 ```
 \
 
 ## User Effects  
 
-Now looking at the effect of users on the movie ratings, Figure 4 presents the frequency at which each user provided ratings. The graph shows ratings in log scale for ease of presentation. Based on this histogram, we see the same pattern for users that is present for movies: large variability in the number of ratings per user. In general, the majority of users have provided between 30 and 500 ratings. Notably, four users have provided less than 14 ratings and 116 users have provided less than 16 ratings, whereas five users have provided more than 4000 ratings. This variability is is particularily noticeable in Tables 6 and 7 which present the users with the most and least ratings given, respectively.  
-
-As is the case with the ratings per movie, the variability in the number of ratings per user may have an important impact in the development of our predictive model. The confidence in each of the average user effect will vary considerably due to the substantially different numbers of ratings per user, with some estimates being based on relatively low numbers of ratings. Due to the large variability in the number of ratings per movie and per user, the predictive models will likely benefit from the inclusion of regularization. Regularization involves applying a weight to the main effect terms (e.g., the movie and user effects) in order to control for differences in the number of ratings used to calculate the user and movie averages. In particular, averages based on low numbers of ratings are penalized due to the relative inaccuracy of these estimates, while the weight or penalty term has little influence on the estimates based on large numbers.  
+Now looking at the effect of users on the ratings, Figure 4 presents the frequency at which each user provided ratings (i.e., frequency of ratings by frequency of users). The graph shows ratings in log scale to highlight the pattern. Based on this histogram, we see the same pattern for users that is present for movies: large variability in the number of ratings per user.  
 
 ``` {r frequency of user ratings, echo = FALSE}
 # plot of the frequency of user ratings
@@ -351,34 +364,13 @@ edx %>%
   ggtitle("Figure 4: Frequency of User Ratings (log scale)") +
   theme(axis.title.x = element_text(vjust = -3)) +
   theme(axis.title.y = element_text(angle = 90, vjust = 3)) +
-  theme(plot.title = element_text(size = 15, vjust = 5, hjust = 0.5)) +
+  theme(plot.title = element_text(size = 12, vjust = 5, hjust = 0.5)) +
   theme(plot.margin = unit(c(1,1,1,1), "cm"))
 ```
 \
 
-``` {r users with greatest number of ratings, echo = FALSE}
-# users with the greatest number of ratings
-edx %>% group_by(userId) %>% 
-  summarise(number = n()) %>%
-  arrange(desc(number)) %>%
-  head(10) %>%
-  kable(caption = "Users with the Most Ratings") %>%
-  kable_styling(font_size = 10)
-```
+Additionally, Figure 5 presents the average user rating (for users that have rated at least 100 movies). As seen in the graph, most users have an average rating between 3.00 and 4.25. Once again, it is evident that users differ substantially in how critical they are in providing their ratings. Some users tend to provide much lower (or higher) ratings on average compared to others. As a result, a user effect accounting for these differences in average user rating may be useful in the predictive models.  
 \
-
-``` {r users with the least number of ratings, echo = FALSE}
-# users with the fewest number of ratings
-edx %>% group_by(userId) %>% 
-  summarise(number = n()) %>%
-  arrange(number) %>%
-  head(10) %>%
-  kable(caption = "Users with the Least Ratings") %>%
-  kable_styling(font_size = 10)
-```
-\
-
-Additionally, Figure 5 presents the average user rating (for users that have rated at least 100 movies). As seen in the graph, most users have an avergae rating between 3.00 and 4.25. Once again, it is evident that users differ substantially in how critical they are of the movies. Some users tend to provide much lower ratings compared to others. Thus, a user effect may be useful in the predictive models.
 
 ``` {r frequency of average user rating, echo = FALSE}
 # plot of the frequency of average user rating
@@ -396,18 +388,75 @@ edx %>%
   ggtitle("Figure 5: Frequency of Average User Rating") +
   theme(axis.title.x = element_text(vjust = -3)) +
   theme(axis.title.y = element_text(angle = 90, vjust = 3)) +
-  theme(plot.title = element_text(size = 15, vjust = 5, hjust = 0.5)) +
+  theme(plot.title = element_text(size = 12, vjust = 5, hjust = 0.5)) +
   theme(plot.margin = unit(c(1,1,1,1), "cm"))
 ```
 \
 
+Similar to the case with movies, there is variability in average user rating, but some of these averages are based on relatively few observations. In general, the majority of users have provided between 30 and 500 ratings. Notably, four users have provided less than 14 ratings and 116 users have provided less than 16 ratings, whereas five users have provided more than 4000 ratings. This variability is particularly noticeable in Tables 6 and 7 which present the users with the most and least ratings, respectively.  
+
+``` {r users with most ratings, echo = FALSE}
+# users with the greatest number of ratings
+edx %>% group_by(userId) %>% 
+  summarise(number = n()) %>%
+  arrange(desc(number)) %>%
+  head(10) %>%
+  kbl(caption = "Most Active Users", align = "c") %>%
+  row_spec(0, bold = T) %>%
+  kable_classic(full_width = F) %>%
+  kable_styling(latex_options = "hold_position", font_size = 10)
+```
+\
+
+``` {r users with the least ratings, echo = FALSE}
+# users with the least number of ratings
+edx %>% group_by(userId) %>% 
+  summarise(number = n()) %>%
+  arrange(number) %>%
+  head(10) %>%
+  kbl(caption = "Least Active Users", align = "c") %>%
+  row_spec(0, bold = T) %>%
+  kable_classic(full_width = F) %>%
+  kable_styling(latex_options = "hold_position", font_size = 10)
+```
+\
+
+As is the case with the ratings per movie, the variability in the number of ratings per user may have an important impact in the development of our predictive model. The confidence in each of the average user ratings will vary considerably due to the substantially different numbers of ratings per user, with some estimates being based on relatively low numbers of ratings.  
+
+Due to the large variability in the number of ratings per movie and per user, the predictive models will likely benefit from the inclusion of regularization. Regularization involves applying a weight to the main effect terms (e.g., the movie and user effects) in order to control for differences in the number of ratings used to calculate the user and movie averages. In particular, averages based on low numbers of ratings are penalized more due to the relative inaccuracy of these estimates, while the weight or penalty term has little influence on the estimates based on large numbers of observations.  
+
 ## Time Effects  
 
-The impact of time on movie ratings can be examined in a number of manners, including the age of the rating, the age of the movie, or the difference in time between the release of the movie and its rating. 
+The impact of time on ratings can be examined in a number of ways, including the age of the rating, the age of the movie, or the difference in time between the release of the movie and the rating.  
 
-First, the plots in Figure 6 present the average rating across time, averaging across different time periods (i.e., weeks, months, and years). From these graphs, it is evident that the average rating varies slightly over time. The pattern is most apparent in the bottom graph with the date of rating rounded to the year. In this graph, it can be seen that the average movie rated dropped from approximately 3.85 in 1995 to a low of approximately 3.45 in 2005 before rising again slightly to 3.55 in 2010. As such, the predictive models may benefit from the inclusion of term accounting for the date of the rating.  
+First, the date or age of the rating was explored. As seen in Figure 6, which shows the frequency of ratings per movie per year, the number of ratings per movie per year varies considerably. As such, the average rating per year is based on relatively different frequencies of ratings. The averages based on the larger numbers of observations provide better estimates of the true means relative to those based on relatively few observations.  
+\
 
-``` {r average rating over time, echo = FALSE, message = FALSE, fig_height = 8}
+``` {r frequency of rating per year of rating, echo = FALSE}
+# plot of frequency of ratings by year of rating
+edx %>%
+  group_by(movieId) %>%
+  summarize(number = n(), year = as.character(first(year_rated))) %>% 
+  ggplot(aes(x = year, y = number)) +
+  geom_boxplot(color = "black", fill = "#00abff") +
+  scale_y_sqrt(labels = comma, breaks = pretty_breaks(n = 10)) +
+  scale_x_discrete() +
+  xlab("Year of Rating") +
+  ylab("Frequency of Ratings per Movie") +
+  theme_light() +
+  ggtitle("Figure 6: Frequency of Ratings per Movie by Year of Rating") +
+  theme(axis.title.x = element_text(vjust = -3)) +
+  theme(axis.title.y = element_text(angle = 90, vjust = 3)) +
+  theme(plot.title = element_text(size = 12, vjust = 5, hjust = 0.5)) +
+  theme(plot.margin = unit(c(1,1,1,1), "cm")) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+\
+
+The plots in Figure 7 present the average rating across time, averaging across different time periods (i.e., weeks, months, and years). From these graphs, it is evident that the average rating varies slightly over time. For instance, looking at the pattern in the bottom graph with the date of rating rounded to the year, it can be seen that the average movie rated dropped from approximately 3.85 in 1995 to a low of approximately 3.45 in 2005 before rising again slightly to 3.55 in 2010. As such, the predictive models may benefit from the inclusion of term accounting for the date of the rating.  
+\
+
+``` {r average rating over time, echo = FALSE, message = FALSE}
 
 # plot of average rating by week of rating
 plot1 <- edx %>% mutate(week_rated = round_date(date_rated, unit = "week")) %>%
@@ -417,12 +466,12 @@ plot1 <- edx %>% mutate(week_rated = round_date(date_rated, unit = "week")) %>%
   geom_point(alpha = 0.75) +
   geom_smooth(method = "loess") +
   scale_y_continuous(breaks = pretty_breaks(n = 10)) +
-  xlab("Date of Rating Rounded to Week") +
+  xlab("Day of Rating") +
   ylab("Average Rating") +
   theme_light() +
   theme(axis.title.x = element_text(vjust = -3)) +
   theme(axis.title.y = element_text(angle = 90, vjust = 3)) +
-  theme(plot.title = element_text(size = 15, vjust = 5, hjust = 0.5)) +
+  theme(plot.title = element_text(size = 12, vjust = 5, hjust = 0.5)) +
   theme(plot.margin = unit(c(1,1,1,1), "cm"))
 
 # plot of average rating by month of rating
@@ -433,12 +482,12 @@ plot2 <- edx %>% mutate(month_rated = round_date(date_rated, unit = "month")) %>
   geom_point(alpha = 0.75) +
   geom_smooth(method = "loess") +
   scale_y_continuous(breaks = pretty_breaks(n = 10)) +
-  xlab("Date of Rating Rounded to Month") +
+  xlab("Week of Rating") +
   ylab("Average Rating") +
   theme_light() +
   theme(axis.title.x = element_text(vjust = -3)) +
   theme(axis.title.y = element_text(angle = 90, vjust = 3)) +
-  theme(plot.title = element_text(size = 15, vjust = 5, hjust = 0.5)) +
+  theme(plot.title = element_text(size = 12, vjust = 5, hjust = 0.5)) +
   theme(plot.margin = unit(c(1,1,1,1), "cm"))
 
 # plot of average rating by year of rating
@@ -449,44 +498,21 @@ plot3 <- edx %>% mutate(year_rated = round_date(date_rated, unit = "year")) %>%
   geom_point(alpha = 0.75) +
   geom_smooth(method = "loess") +
   scale_y_continuous(breaks = pretty_breaks(n = 10)) +
-  xlab("Date of Rating Rounded to Year") +
+  xlab("Year of Rating") +
   ylab("Average Rating") +
   theme_light() +
   theme(axis.title.x = element_text(vjust = -3)) +
   theme(axis.title.y = element_text(angle = 90, vjust = 3)) +
-  theme(plot.title = element_text(size = 15, vjust = 5, hjust = 0.5)) +
+  theme(plot.title = element_text(size = 12, vjust = 5, hjust = 0.5)) +
   theme(plot.margin = unit(c(1,1,1,1), "cm"))
 
-grid.arrange(plot1, plot2, plot3, top = "Figure 6: Average Rating Across Time")
+grid.arrange(plot1, plot2, plot3, heights = 5,
+             top = "Figure 7: Average Rating Across Time")
 ```
 \
 
-However, as seen in Figure 7, the number of ratings per movie per year varies considerably. As such, the average rating per year of rating is basec don substantially different frequencies of ratings. The averages based on the larger numbers of observatnios are better estimates of the true means relative to those based on realtively few observations. As such, the predictive model may benefit from regularization in order to account for differences in the frequency of ratings per year.  
-
-``` {r frequency of rating per year of rating, echo = FALSE}
-# plot of frequency of ratings by year of rating
-edx %>%
-  group_by(movieId) %>%
-  summarize(number = n(), year = as.character(first(year_rated))) %>% 
-  ggplot(aes(x = year, y = number)) +
-  geom_boxplot(color = "black", fill = "#00abff") +
-  scale_y_sqrt(labels = comma, breaks = pretty_breaks(n = 10)) +
-  scale_x_discrete(breaks = pretty_breaks(n = 10)) +
-  xlab("Year of Rating") +
-  ylab("Frequency of Ratings for Each Movie") +
-  theme_light() +
-  ggtitle("Figure 7: Frequency of Ratings per Movie by Year of Rating") +
-  theme(axis.title.x = element_text(vjust = -3)) +
-  theme(axis.title.y = element_text(angle = 90, vjust = 3)) +
-  theme(plot.title = element_text(size = 15, vjust = 5, hjust = 0.5)) +
-  theme(plot.margin = unit(c(1,1,1,1), "cm")) +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))
-```
+Next, the year of release was examined. Figure 8 presents the frequency of ratings by year of movie release, while Figure 9 presents the average rating by year of release. Based on Figure 8, it can be seen that the frequency of ratings varies across the release year of the movie. Movies released in the 1980s and 1990s have received the most ratings, while older movies tend to receive fewer and fewer ratings (with the exception of some movies released in the 1940s). Although movies in the 1980s and 1990s received the greatest number of ratings and older movies received relatively few ratings, the average movie rating presented in Figure 9 shows a different pattern. The average movie appears to depict a non-linear relationship that rises from the 1920s peaking in the 1940s before falling back down beginning in the 1960s.  
 \
-
-Next, the year of release was examined. Figure 8 presents the frequency of ratings by year of movie release, while Figure 9 presents the average rating by year of release. Based on Figure 8, it can be seen that the frequency of ratings varies considerably based on the release year of the movie. Movies released in the 1980s and 1990s have received the most ratings, while older movies tend to receive fewer and fewer ratings (with the exception of some movies released in the 1940s). 
-
-Although movies in the 1980s and 1990s received the greatest number of ratings and older movies received relatively few ratings, the average movie rating presented in Figure 9 shows a different pattern. The average movie appears to depict a non-linear relationship that rises from the 1920s peaking in the 1940s before falling back down beginning in the 1960s.  
 
 ``` {r frequency of ratings by release date, echo = FALSE}
 # plot of frequency of ratings by date of release
@@ -503,9 +529,8 @@ edx %>%
   ggtitle("Figure 8: Frequency of Ratings by Release Year") +
   theme(axis.title.x = element_text(vjust = -3)) +
   theme(axis.title.y = element_text(angle = 90, vjust = 3)) +
-  theme(plot.title = element_text(size = 15, vjust = 5, hjust = 0.5)) +
-  theme(plot.margin = unit(c(1,1,1,1), "cm")) +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  theme(plot.title = element_text(size = 12, vjust = 5, hjust = 0.5)) +
+  theme(plot.margin = unit(c(1,1,1,1), "cm"))
 ```
 \
 
@@ -525,15 +550,15 @@ edx %>%
   ggtitle("Figure 9: Average Rating by Release Year") +
   theme(axis.title.x = element_text(vjust = -3)) +
   theme(axis.title.y = element_text(angle = 90, vjust = 3)) +
-  theme(plot.title = element_text(size = 15, vjust = 5, hjust = 0.5)) +
-  theme(plot.margin = unit(c(1,1,1,1), "cm")) +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  theme(plot.title = element_text(size = 12, vjust = 5, hjust = 0.5)) +
+  theme(plot.margin = unit(c(1,1,1,1), "cm"))
 ```
 \
 
-Additionally, the impact of the time was examined in Figure 10. This figure presents the average movie rating by the number of ratings per year. Generally, as the number of ratings per year increases, so does the average rating. That is, movies with the fewwest ratings per year tend to have an avergae rating just over 3.0, while the movies with the most ratings per year tend to have an average rating over 4.0. The differenec in average rating between the movies with the most ratings per year compared to the movies with the least ratings per year can be seen in Tables 8 and 9. These tables present the movies with the most and least ratings per year, respectively. 
+Additionally, the impact of the time was examined in Figure 10. This figure presents the average movie rating by the number of ratings per year. Generally, as the number of ratings per year increases, so does the average rating. That is, movies with the fewest ratings per year tend to have an avergae rating just over 3.0, while the movies with the most ratings per year tend to have an average rating over 4.0.  
+\
 
-``` {r average rating by ratings per year , echo = FALSE}
+``` {r average rating by ratings per year , echo = FALSE, message = FALSE}
 # plot of average rating by rating per year 
 edx %>%
   group_by(movieId) %>%
@@ -552,11 +577,12 @@ edx %>%
   ggtitle("Figure 10: Average Rating by Ratings per Year") +
   theme(axis.title.x = element_text(vjust = -3)) +
   theme(axis.title.y = element_text(angle = 90, vjust = 3)) +
-  theme(plot.title = element_text(size = 15, vjust = 5, hjust = 0.5)) +
-  theme(plot.margin = unit(c(1,1,1,1), "cm")) +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  theme(plot.title = element_text(size = 12, vjust = 5, hjust = 0.5)) +
+  theme(plot.margin = unit(c(1,1,1,1), "cm"))
 ```
 \
+
+The difference in average rating between the movies with the most ratings per year compared to the movies with the least ratings per year can be seen in Tables 8 and 9. These tables present the movies with the most and least ratings per year, respectively. Notice the considerable differences in the number of ratings (n), average rating (rating), and ratings per year (rate) between Table 8, with the highest ratings per year, and Table 9, with the lowest.  
 
 ``` {r table of most rated movies per year, echo = FALSE}
 # table of top movies by ratings per year 
@@ -568,8 +594,11 @@ edx %>%
   mutate(rate = n/years) %>%
   top_n(10, rate) %>%
   arrange(desc(rate)) %>%
-  kable(caption = "Movies with the Most ratings per Year") %>%
-  kable_styling(font_size = 10)
+  kbl(caption = "Movies with the Most Ratings per Year", align = "ccclcc") %>%
+  row_spec(0, bold = T, align = "c") %>%
+  kable_classic(full_width = F) %>%
+  kable_styling(latex_options = "hold_position", font_size = 10) %>%
+  kable_styling(latex_options = "scale_down")
 ```
 \
 
@@ -583,12 +612,16 @@ edx %>%
   mutate(rate = n/years) %>%
   top_n(-10, rate) %>%
   arrange(rate) %>%
-  kable(caption = "Movies with the Least Ratings per Year") %>%
-  kable_styling(font_size = 10)
+  kbl(caption = "Movies with the Least Ratings per Year", align = "ccclcc") %>%
+  row_spec(0, bold = T, align = "c") %>%
+  kable_classic(full_width = F) %>%
+  kable_styling(latex_options = "hold_position", font_size = 10) %>%
+  kable_styling(latex_options = "scale_down")
 ```
 \
 
-Finally, the impact of time on ratings was investigated by examinging the relative age of the ratings (i.e., the number of years in between the date of the rating and the date of release, calculated by substracting the year of release from the year of the rating). Figure 11 presents the frequency of ratings per movie by the average relative age of the rating, while Figure 12 presents the average rating by average relative age of rating. As seen in these graphs, most ratings were provided relatively closely to the release of the movie (i.e., with an average relative age of rating less than 20 years). As well, it appears there is a relationship between the average rating and the relative age of the ratings. Generally, relatively older ratings (i.e., ratings provided longer after the movie release) have a slightly hi9gher mean than relatively younger ratings. 
+Finally, the impact of time on ratings was investigated by examining the relative age of the ratings (i.e., the number of years between the date of the movie release rating and the date of the rating, calculated by substracting the year of release from the year of the rating). Figure 11 presents the frequency of ratings per movie by the average relative age of the rating, while Figure 12 presents the average rating by average relative age of rating. As seen in these graphs, most ratings were provided relatively closely to the release of the movie (i.e., with an average relative age of rating less than 20 years). As well, it appears there is a relationship between the average rating and the relative age of the ratings. Generally, relatively older ratings (i.e., ratings provided longer after the release) have a slightly higher mean than younger ratings. 
+\
 
 ``` {r frequency of rating by average relative age of rating, echo = FALSE}
 # plot of frequency of ratings by relative age of rating
@@ -605,13 +638,12 @@ edx %>%
   ggtitle("Figure 11: Frequency of Ratings by Average Relative Age of Rating") +
   theme(axis.title.x = element_text(vjust = -3)) +
   theme(axis.title.y = element_text(angle = 90, vjust = 3)) +
-  theme(plot.title = element_text(size = 15, vjust = 5, hjust = 0.5)) +
-  theme(plot.margin = unit(c(1,1,1,1), "cm")) +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  theme(plot.title = element_text(size = 12, vjust = 5, hjust = 0.5)) +
+  theme(plot.margin = unit(c(1,1,1,1), "cm"))
 ```
 \
 
-``` {r average rating by average relative age of rating, echo = FALSE}
+``` {r average rating by average relative age of rating, echo = FALSE, message = FALSE}
 # plot of average of ratings by relative age of rating
 edx %>%
   group_by(movieId) %>%
@@ -627,15 +659,14 @@ edx %>%
   ggtitle("Figure 12: Average Rating by Average Relative Age of Rating") +
   theme(axis.title.x = element_text(vjust = -3)) +
   theme(axis.title.y = element_text(angle = 90, vjust = 3)) +
-  theme(plot.title = element_text(size = 15, vjust = 5, hjust = 0.5)) +
-  theme(plot.margin = unit(c(1,1,1,1), "cm")) +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  theme(plot.title = element_text(size = 12, vjust = 5, hjust = 0.5)) +
+  theme(plot.margin = unit(c(1,1,1,1), "cm"))
 ```
 \
 
 ## Genre Effects  
 
-As described above, the genre information consists of a pipe separated string variable that references all of the relevant genres for a given movie. Thus, some movies receive only a single genre tag while others receive multiple genre tags. This can be seen in Table 10, which presents the number and avergae ratings for the ten most common genre combinations. In contrast, Table 11 presents the number and average ratings for each of the ten most common individual genre tags. As such, due to the manner in which the genre infromation is stored, two possibilities present themselves: treat the overall genre combinations as separate factors, or treat each individual genre tag as a separate factor. Each of these approaches were undertaken.  
+As described above, the genre information consists of a pipe separated string variable that references all of the relevant genres for a given movie. Under this system, some movies receive only a single genre tag, while others receive multiple genre tags. This can be seen in Table 10, which presents the number and average ratings for the ten most common genre combinations. In contrast, Table 11 presents the number and average ratings for each of the ten most common individual genre tags. Due to the manner in which the genre infromation is stored, two main possibilities present themselves: treat the overall genre combinations as separate categories, or treat each individual genre tag as a separate attribute of each movie.  
 
 ``` {r table of ratings by overall genre combinations, echo = FALSE}
 # table of number of ratings and average rating by overall genre combination
@@ -643,8 +674,10 @@ edx %>% group_by(genres) %>%
   summarize(number = n(), average = mean(rating)) %>%
   arrange(desc(number)) %>%
   slice(1:10) %>%
-  kable(caption = "Number and Average Rating by Overall Genre Combination") %>%
-  kable_styling(font_size = 10)
+  kbl(caption = "Ratings by Overall Genre Combination", align = "lcc") %>%
+  row_spec(0, bold = T, align = "c") %>%
+  kable_classic(full_width = F) %>%
+  kable_styling(latex_options = "hold_position", font_size = 10)
 ```
 \
 
@@ -654,12 +687,14 @@ edx %>% separate_rows(genres, sep = "\\|") %>%
   group_by(genres) %>%
   summarize(number = n(), average = mean(rating)) %>%
   arrange(desc(number)) %>%
-  kable(caption = "Number and Average Rating by Individual Genre Tags") %>%
-  kable_styling(font_size = 10)
+  kbl(caption = "Ratings by Individual Genre Tags", align = "lcc") %>%
+  row_spec(0, bold = T, align = "c") %>%
+  kable_classic(full_width = F) %>%
+  kable_styling(latex_options = "hold_position", font_size = 10)
 ```
 \
 
-First, the overall genre combinations were examined (i.e., treating each specific combination of genre tags as a separate factor). Considered in this manner, there are 797 unique genre combinations. Figure 13 presents the frequency of ratings for all of the genre combinations with at least 1000 ratings in descending order. As seen in this figure and Table 10, two genre combinations have received nearly twice as many ratings as all of the other combinations (i.e., "Drama" and "Comedy") and the top six categories have received the majority of ratings and are all closely related genre combinations. As well, Figure 14 presents the average rating for all of the genre combinations with at least 1000 ratings in descending order, with error bars around the means set to plus or minus two standard errors. The average rating for some genre combinations peaks at a high of just over 4.3 compared to the lowest values of under 2.1. Therefore, it seems that overall genre combination may be a useful variable to include in the predictive models.  
+First, the overall genre combinations were examined (i.e., treating each specific combination of genre tags as a separate category). Considered in this manner, there are 797 unique genre combinations. Figure 13 presents the frequency of ratings for all of the genre combinations with at least 1000 ratings in descending order. As seen in this figure and Table 10, two genre combinations have received nearly twice as many ratings as all of the other combinations (i.e., "Drama" and "Comedy"). The top six categories that have received the majority of ratings are also all closely related in genre combinations. 
 
 ``` {r frequency of ratings by overall genre combination, echo = FALSE}
 # plot of the number of rating by overall genre combination (for genres with n >= 1000)
@@ -676,10 +711,13 @@ edx %>% group_by(genres) %>%
   ggtitle("Figure 13: Frequency of Ratings by Overall Genre Combination") +
   theme(axis.title.x = element_text(vjust = -3)) +
   theme(axis.title.y = element_text(angle = 90, vjust = 3)) +
-  theme(plot.title = element_text(size = 15, vjust = 5, hjust = 0.5)) +
+  theme(plot.title = element_text(size = 12, vjust = 5, hjust = 0.5)) +
   theme(plot.margin = unit(c(1,1,1,1), "cm")) +
   theme(axis.text.x = element_blank())
 ```
+\
+
+As well, Figure 14 presents the average rating for all of the genre combinations (for combinations with at least 1000 ratings in descending order), with error bars around the means set to plus or minus two standard errors. The average rating for some genre combinations peaks at a high of just over 4.3 compared to the lowest values of under 2.1. Therefore, overall genre combination may be a useful variable to include in the predictive models.   
 \
 
 ``` {r average rating by overall genre combination, echo = FALSE}
@@ -698,13 +736,14 @@ edx %>% group_by(genres) %>%
   ggtitle("Figure 14: Average Rating by Overall Genre Combination") +
   theme(axis.title.x = element_text(vjust = -3)) +
   theme(axis.title.y = element_text(angle = 90, vjust = 3)) +
-  theme(plot.title = element_text(size = 15, vjust = 5, hjust = 0.5)) +
+  theme(plot.title = element_text(size = 12, vjust = 5, hjust = 0.5)) +
   theme(plot.margin = unit(c(1,1,1,1), "cm")) +
   theme(axis.text.x = element_blank())
 ```
 \
 
-Next, the individual genre tags were examined (i.e., separating each overall genre combination into the individual genre tags and treating the individual tags as separate factors). Considered in this manner, there are 19 unique genre tags and a no genre listed category (see Table 11). Once again, two genre tags (i.e., "Drama" and "Comedy") have received far more ratings than the others, with some categories receiving relatively few ratings (i.e., "Documentary" and "IMAX"). Figure 15 presents the frequency of ratings for each of the individual genre tags in descending order. The same pattern is apparent as before, with some genre tags receiving susbstantially more ratings than others. In addition, Figure 16 shows the average rating for each of the indvidual genre tags, with error bars around the means set to plus or minus two standard errors. The average rating across the individual genre tags varies from over 4.0 for "Film-Noir" to under 3.3 for "Horror" movies. Consistent with the above examination, genre infromation appears to have some backing for inclusion in a predictive model.  
+Next, the individual genre tags were examined (i.e., separating each overall genre combination into the individual genre tags and treating the individual tags as separate characteristics). Considered in this manner, there are 19 unique genre tags and a no genre listed category (see Table 11). Once again, two genre tags (i.e., "Drama" and "Comedy") have received far more ratings than the others, with some categories receiving relatively few ratings (i.e., "Documentary" and "IMAX"). Figure 15 presents the frequency of ratings for each of the individual genre tags in descending order. The same pattern is apparent as before; some genre tags receiving susbstantially more ratings than others.  
+\
 
 ``` {r frequency of ratings by individual genre tags, echo = FALSE}
 # plot of number of ratings by separate movie genres (CAUTION slow code)
@@ -715,17 +754,20 @@ edx %>% separate_rows(genres, sep = "\\|") %>%
   ggplot(aes(genres, number)) + 
   geom_bar(aes(fill = genres), stat = "identity") +
   scale_y_continuous(labels = comma, breaks = pretty_breaks(n = 10)) +
-  xlab("Individual Genres") +
+  xlab("Individual Genre Tags") +
   ylab("Frequency of Ratings") +
   theme_light() +
   ggtitle("Figure 15: Frequency of Ratings per Individual Genres") +
   theme(axis.title.x = element_text(vjust = -3)) +
   theme(axis.title.y = element_text(angle = 90, vjust = 3)) +
-  theme(plot.title = element_text(size = 15, vjust = 5, hjust = 0.5)) +
+  theme(plot.title = element_text(size = 12, vjust = 5, hjust = 0.5)) +
   theme(plot.margin = unit(c(1,1,1,1), "cm")) +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1)) + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
   theme(legend.position = "none")
 ```
+\
+
+In addition, Figure 16 shows the average rating for each of the indvidual genre tags, with error bars around the means set to plus or minus two standard errors. The average rating across the individual genre tags varies from over 4.0 for "Film-Noir" to under 3.3 for "Horror" movies. Consistent with the above examination, genre infromation appears to have some backing for inclusion in a predictive model.  
 \
 
 ``` {r average rating by individual genre tags, echo = FALSE}
@@ -739,30 +781,32 @@ edx %>% separate_rows(genres, sep = "\\|") %>%
   geom_point(color = "#00abff") +
   geom_errorbar(color = "Black") + 
   scale_y_continuous(breaks = pretty_breaks(n = 10)) +
-  xlab("Individual Genres") +
+  xlab("Individual Genre Tags") +
   ylab("Average Rating") +
   theme_light() +
   ggtitle("Figure 16: Average Rating per Individual Genres") +
   theme(axis.title.x = element_text(vjust = -3)) +
   theme(axis.title.y = element_text(angle = 90, vjust = 3)) +
-  theme(plot.title = element_text(size = 15, vjust = 5, hjust = 0.5)) +
+  theme(plot.title = element_text(size = 12, vjust = 5, hjust = 0.5)) +
   theme(plot.margin = unit(c(1,1,1,1), "cm")) +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 \
 
+\pagebreak
+
 # Modeling Approaches  
 
-Due to the size of the dataset and limitations of the operating system, many machine learning functions were not possible. As described above, the MovieLens dataset contains over 10 million ratings (9,000,055 in the edx and 7,200,043 in the training dataset) with over 70,000 unique users (69,878 in the edx and training datasets) and over 10,000 unique movies (10,677 in the edx and 10,644 in the training dataset). As a result of the sheer volume of data, it was not possible to run any training functions from the caret package (i.e., R would crash or produce a system related error). Therefore, a linear approach using the least squares estimate was undertaken using the possible predictors identified in the exploratory analyses.  
+Prior to building the predictive models, the edx dataset was partitioned into a training (90%) and a test dataset (10%), in a similar manner that was done previously to partition the MovieLens data into the edx and validation datasets. In this instance, the training dataset will be used to develop the predictive models and the test dataset will be used to evaluate the overall performance of the models during the training stage. As mentioned, the validation dataset (i.e., final hold-out validation dataset) will only be used to evaluate the performance of the final model during the evaluation stage. Reminder, the code used to partition the edx dataset, as well as all code for this project, is available in the supplemental code file.  
 
-Based on the exploratory analyses described above, it appears that each of the examined variables may prove useful in trying to build the predictive algorithm for the recommendation system. Accordingly, the approach taken here will entail the additional of each variable in turn and examination of the performance of the predictive model at each stage using the test dataset. The full code for each of the models is available in the supplemental code file.   
+Due to the size of the dataset and limitations of the operating system used, many machine learning functions were not possible. As described above, the MovieLens dataset contains over 10 million ratings (9,000,055 in the edx dataset) with over 70,000 unique users (69,878 in the edx datasets) and over 10,000 unique movies (10,677 in the edx dataset). As a result of the sheer volume of data, it was not possible to run many functions in R, including any training functions from the caret package or attempts at matrix factorization (i.e., R would crash or produce a system related error). Therefore, a linear approach using the least squares estimate was undertaken using the possible predictors identified in the exploratory analyses.  
 
-Prior to building the predictive models, the edx dataset will be partitioned into a training (80%) and a test dataset (20%), in a similar manner that was done previously to partition the MovieLens data into the edx and validation datasets. In this instance, the training dataset will be used to develop the predictive models and the test dataset will be used to evaluate the overall performance of the models during the training stage. As mentioned, the validation dataset (i.e., final hold-out validation dataset) will only be used to evaluate the performance of the final model during the evaluation stage. The code used to partition the edx dataset is presented here:  
+Based on the exploratory analyses described above, it appears that each of the examined variables may prove useful in trying to build the predictive algorithm for the recommendation system. Accordingly, the approach taken here will entail the additional of each variable in turn and examination of the performance of the predictive model at each stage using the test dataset.  
 
-``` {r partitioning the edx dataset into training and test sets, warning = FALSE}
+``` {r partitioning the edx dataset into training and test sets, echo = FALSE, warning = FALSE}
 # partition the edx dataset into training and test sets
 set.seed(85, sample.kind = "Rounding")
-test_index <- createDataPartition(y = edx$rating, times = 1, p = 0.2, list = FALSE)
+test_index <- createDataPartition(y = edx$rating, times = 1, p = 0.1, list = FALSE)
 
 train_set <- edx[-test_index,]
 test_set <- edx[test_index,]
@@ -778,29 +822,28 @@ test_set <- test_set %>%
 save(train_set, file = "train_set.RData")
 save(test_set, file = "test_set.RData")
 ```
-\
 
-Additionally, as described above, the RMSE will be used to evaluate the performance of the models, both during development and evaluation. In this context, the RMSE is a measure of deviation, similar to the standard deviation. It defines the error present in the predictive models. An RMSE of one means that on average the predicted values are off by one star. The aim is to develop a predictive model that produces the lowest RMSE. The code used for the RMSE function is presented here:  
+Additionally, as described above, the RMSE will be used to evaluate the performance of the models, both during development and evaluation. In this context, the RMSE is a measure of deviation, similar to the standard deviation. It defines the error present in the predictive models. An RMSE of one means that on average the predicted values are off by one star. The aim is to develop a predictive model that produces the lowest RMSE. The code used for the RMSE function is available in the supplemental materials.   
 
-``` {r create the RMSE function}
+``` {r create the RMSE function, echo = FALSE}
 # create a funtion that computes RMSE 
 RMSE <- function(true_ratings, predicted_ratings){ 
   sqrt(mean((true_ratings - predicted_ratings)^2, na.rm = TRUE))
 }
 ```
 
-## Baseline Model  
+## Model #1 - Baseline    
 
-The first model consists of the simplest recommendation system. In order to get a baseline RMSE for comparison with other models, the first model examined consisted of no predictors. The mean value across all ratings in the training set is used to predict all ratings. That is, this model predicts the average rating for all of the movies ignoring any possible effects or biases.  
+The first model consisted of the simplest recommendation system. In order to get a baseline RMSE for comparison with other models, the first model included no predictor variables. The mean value across all ratings in the training dataset was used to predict all ratings. That is, this model predicted the average rating for all of the movies ignoring any possible effects or biases.  
 
-This model can be represented with the following formula, with  
+This model can be represented with the following formula, with
 
-* $\mu$ equal to the overall mean of all ratings  
+* $\mu$ equal to the overall mean of all ratings
 * $\epsilon_{u,i}$ equal to the residual errors that are assumed to be independent across all ratings  
 
 $$ Y_{u,i} = \mu + \epsilon_{u,i} $$  
 
-Table 12 displays the results of this baseline model. This value will be used to examine whether the inclusion of other predictors improves the predictive algorithm. From Table 12, we see that this base line model predicts with an average error of approximately 1.05994 stars.  
+Table 12 displays the results of the baseline model. From Table 12, we see the baseline model predicts with an average error of roughly 1.0604 stars in the test dataset. Using only the mean value for all predictions, the model was off on average by just over one star. This value was used to examine whether the inclusion of other predictors improves the predictive algorithm.  
 
 ``` {r model 1 - average only, echo = FALSE}
 # train the model 
@@ -813,23 +856,25 @@ model_1_rmse <- RMSE(test_set$rating, mu)
 results_rmse <- data.frame(Method = "Model #1 - Average", RMSE = model_1_rmse)
 
 results_rmse %>% 
-  kable(caption = "Results of Predictive Model in the Test Dataset", align = "c") %>%
-  kable_styling(font_size = 10)
+  kbl(caption = "Results in the Test Dataset", align = "lc") %>%
+  row_spec(0, bold = T, align = "c") %>%
+  kable_classic(full_width = F) %>%
+  kable_styling(latex_options = "hold_position", font_size = 10)
 ```
 \
 
-## Model 2 - Movie Effects  
+## Model #2 - Movie Effects  
 
 From the exploratory analyses, it was apparent that there was considerable variability in the average movie ratings (see Figure 3). Thus, a term was included in the second model to account for these differences in average movie rating. Specifically, the average deviation of each movie from the overall mean rating was included to account for the movie effect or bias.  
 
-This model can be represented with the following formula, with   
+This model can be represented with the following formula, with
 
-*	$\mu$ and $\epsilon_{u,i}$ the same as above  
+*	$\mu$ and $\epsilon_{u,i}$ the same as above
 *	$b_i$ equal to the average deviation from $\mu$ for movie i
 
 $$Y_{u,i} = \mu +b_{i}+ \epsilon_{u,i}$$  
 
-Table 13 shows the results of the second model and the baseline model. This model now takes into account that some movies are generally rated higher or lower than average. The second model including a movie effect erm increased the accuracy from 1.05994 to 0.94286. The addition of other predictors may improve the model.  
+Table 13 shows the results of the second model. This model now takes into account that some movies are generally rated higher or lower than the overall average rating. The second model including a movie effect term increased the accuracy from 1.06041 to 0.94329 in the test dataset. With the addition of other predictor variables, we should be able to improve upon this model.  
 
 ``` {r model 2 - movie effects, echo = FALSE}
 # train the model 
@@ -850,23 +895,25 @@ results_rmse <- bind_rows(results_rmse,
                           data.frame(Method = "Model #2 - Movie Effects", RMSE = model_2_rmse))
 
 results_rmse %>% 
-  kable(caption = "Results of Predictive Models in the Test Dataset", align = "c") %>%
-  kable_styling(font_size = 10)
+  kbl(caption = "Results in the Test Dataset", align = "lc") %>%
+  row_spec(0, bold = T, align = "c") %>%
+  kable_classic(full_width = F) %>%
+  kable_styling(latex_options = "hold_position", font_size = 10)
 ```
 \
 
-## Model 3 - User Effects  
+## Model #3 - User Effects  
 
 The exploratory analyses also revealed that some users give higher and lower ratings than others. That is, there was variability in the average user rating (see Figure 5). In the third model, a term was included to account for these differences in average user rating. Specifically, the average deviation of each user from the overall mean and movie mean was included to account for the user effect or bias.  
 
-This model can be represented with the following formula, with  
+This model can be represented with the following formula, with
 
-*	$\mu$, $\epsilon_{u,i}$, and $b_i$ the same as above  
+*	$\mu$, $\epsilon_{u,i}$, and $b_i$ the same as above
 *	$b_u$ equal to the average deviation from $\mu$ minus $b_i$ for user u  
 
 $$ Y_{u,i} = \mu + b_{i} + b_{u} + \epsilon_{u,i} $$  
 
-Table 14 shows the results of the third model. This model now takes into account the variability in average movies and user ratings. With these two predictors, the model has improved the accuracy substantially to 0.86495. However, as discussed above, there is large variability in the frequency of movie and user rating, with some movies and users having much more ratings than others. As the average movie and user ratings are then based on different numbers of observations, some of these averages are more trustworthy than others.  
+Table 14 shows the results of the third model. This model now takes into account the variability in average movies and average user ratings. With these two predictors, the model has improved the accuracy substantially to 0.86540 in the test dataset. However, as discussed above, there is variability in the frequency of movie and user rating, with some movies and users having realtively few ratings compared to the others. As these average movie and user ratings are then based on few observations, these averages are less trustworthy than those based on relatively larger numbers of observations.    
 
 ``` {r model 3 - movie and user effects, echo = FALSE}
 # train the model 
@@ -888,16 +935,18 @@ model_3_rmse <- RMSE(predicted_ratings, test_set$rating)
 results_rmse <- bind_rows(results_rmse,
                           data.frame(Method = "Model #3 - Movie & User Effects", RMSE = model_3_rmse))
 results_rmse %>% 
-  kable(caption = "Results of Predictive Models in the Test Dataset", align = "c") %>%
-  kable_styling(font_size = 10)
+  kbl(caption = "Results in the Test Dataset", align = "lc") %>%
+  row_spec(0, bold = T, align = "c") %>%
+  kable_classic(full_width = F) %>%
+  kable_styling(latex_options = "hold_position", font_size = 10)
 ```
 \
 
-## Model 4 - Regularized Movie and User Effects  
+## Model #4 - Regularized Movie and User Effects  
 
-As seen in Figure 2 and Figure 4, the number of ratings per movie and user varies considerably. Some of the averages are based on relatively small numbers of observations. Table 15 shows the movies with the largest movie effect and the number of times they were rated, while Table 16 shows the movies with the lowest movie effects. Most of these movies have been rated a single time and none have been rated more than 167 times.  
+As seen in Figure 2 and Figure 4, the number of ratings per movie and user varies considerably. Some of the averages are based on relatively small numbers of observations. Table 15 shows the movies with the largest movie effect and the number of times they were rated, while Table 16 shows the movies with the lowest movie effects. Most of these movies have been rated a single time or only a few times.  
 
-``` {r top 10 movies, echo = FALSE}
+``` {r top 10 movies, echo = FALSE, message = FALSE}
 # create a new dataset to examine errors in prediction from Movie effects model
 movie_titles <- edx %>% 
   select(movieId, title) %>%
@@ -909,35 +958,39 @@ train_set %>% dplyr::count(movieId) %>%
   left_join(movie_titles, by="movieId") %>%
   arrange(desc(b_i)) %>% 
   select(title, b_i, n) %>% 
-  slice(1:20) %>% 
-  kable(caption = "Best 20 Movie Effects and Frequency of Ratings") %>%
-  kable_styling(font_size = 10)
+  slice(1:10) %>% 
+  kbl(caption = "Best 10 Movie Effects and Frequency of Ratings", align = "lcc") %>%
+  row_spec(0, bold = T, align = "c") %>%
+  kable_classic(full_width = F) %>%
+  kable_styling(latex_options = "hold_position", font_size = 10)
 ```
 \
 
-``` {r bottom 10 movies, echo = FALSE}
+``` {r bottom 10 movies, echo = FALSE, message = FALSE}
 # table of worst 20 movies by movie ranking with number of ratings 
 train_set %>% dplyr::count(movieId) %>% 
   left_join(movie_averages) %>%
   left_join(movie_titles, by = "movieId") %>%
   arrange(b_i) %>% 
   select(title, b_i, n) %>% 
-  slice(1:20) %>% 
-  kable(caption = "Worst 20 Movie Effects and Frequency of Ratings") %>%
-  kable_styling(font_size = 10)
+  slice(1:10) %>% 
+  kbl(caption = "Worst 10 Movie Effects and Frequency of Ratings", align = "lcc") %>%
+  row_spec(0, bold = T, align = "c") %>%
+  kable_classic(full_width = F) %>%
+  kable_styling(latex_options = "hold_position", font_size = 10)
 ```
 \
 
-The next model attempted to account for the differences in the number of observations across movies and users. Regularization involves the application of a weight to the movie and user effects to control for differences in the number of ratings per movie and user. Movie and user averages based on a small number of ratings are penalized more than averages based on a large number of ratings in order to account for differences in the confidence in these estimates. Accordingly, this model includes regularized movie and regularized user effects.  
+The next model attempted to account for the differences in the number of observations across movies and users. Regularization involves the application of a weight to the movie and user effects to control for differences in the number of ratings per movie and per user. Movie and user averages based on a small number of ratings are penalized more than averages based on a large number of ratings in order to account for differences in the confidence in these estimates. Accordingly, this model included regularized movie and regularized user effects.  
 
-This model can be represented with the following formula, with  
+This model can be represented with the following formula, with
 
-*	$\mu$, $\epsilon_{u,i}$, $b_i$, and $b_u$ the same as above  
+*	$\mu$, $\epsilon_{u,i}$, $b_i$, and $b_u$ the same as above
 * $\lambda_i$ and $\lambda_u$ equal to the penalized least square estimate weights for the movie and user effects  
 
 $$ \frac{1}{N} \displaystyle\sum_{u,i} (Y_{u,i} - \mu - b_{i} - b_{u} - \epsilon_{u, i})^{2} +\lambda(\displaystyle\sum_{i}b_{i}^{2} + \displaystyle\sum_{u}b_{u}^{2})  $$  
 
-Lambda is a tuning parameter that must be selected. The optimal lambda was selected based on the resulting RMSE in the test set. Figure 17 shows a plot of possible lambda coefficients against the resulting RMSE. Based on these results, lambda is set to 4.75.
+Lambda is a tuning parameter that must be selected. The optimal lambda was selected based on the resulting RMSE in the test set. Figure 17 shows a plot of possible lambda coefficients against the resulting RMSE. Based on these results, lambda is set to 5.00.
 
 ``` {r model 4 - regularized movie and user effects, echo = FALSE}
 # define lambda to determine the optimal parameter 
@@ -971,14 +1024,14 @@ data1 %>% ggplot(aes(lambdas, rmses)) +
   ggtitle("Figure 17: Selection of Optimal Lambda") +
   theme(axis.title.x = element_text(vjust = -3)) +
   theme(axis.title.y = element_text(angle = 90, vjust = 3)) +
-  theme(plot.title = element_text(size = 15, vjust = 5, hjust = 0.5)) +
+  theme(plot.title = element_text(size = 12, vjust = 5, hjust = 0.5)) +
   theme(plot.margin = unit(c(1,1,1,1), "cm"))
 
 lambda <- lambdas[which.min(rmses)]
 ```
 \
 
-Table 15 displays the results of all the models. The fourth model now takes into account the variability in average movies and user ratings, as well as the variability in the frequencies upon which these averages are based. With these two predictors and their regularized weighting, the accuracy has improved slightly to 0.86428. Nevertheless, the addition of other predictors may improve the model.
+Table 17 displays the results of this model. The fourth model now takes into account the variability in average movie and average user ratings, as well as the variability in the frequencies upon which these averages are based. With these two predictors and their regularized weighting, the accuracy has improved slightly to 0.86485 in the test dataset. Nevertheless, the addition of other predictors may improve the model.  
 
 ``` {r model 4 - results, echo = FALSE}
 # add the results to the table comparing different models 
@@ -986,27 +1039,28 @@ results_rmse <- bind_rows(results_rmse,
                           data.frame(Method = "Model #4 - Regularized Movie & User Effects", 
                                      RMSE = min(rmses)))
 results_rmse %>% 
-  kable(caption = "Results of Predictive Models in the Test Dataset", align = "c") %>%
-  kable_styling(font_size = 10)
+  kbl(caption = "Results in the Test Dataset", align = "lc") %>%
+  row_spec(0, bold = T, align = "c") %>%
+  kable_classic(full_width = F) %>%
+  kable_styling(latex_options = "hold_position", font_size = 10)
 ```
 \
 
-## Model 5 - Age of Movie Effects  
+## Model #5 - Adding Age of Movie Effects  
 
 Based on Figure 9, the model may benefit from including the year of release. There was some variability in the average rating based on the year of release. In this model a term was added to represent the age of the movie. As seen in the formula below, this term represents the average deviation for each year of release from the overall mean minus the other variables already in the model.  
 
-This model can be represented with the following formula, with  
+This model can be represented with the following formula, with
 
-*	$\mu$, $\epsilon_{u,i}$, $b_i$, and $b_u$ the same as above  
+*	$\mu$, $\epsilon_{u,i}$, $b_i$, and $b_u$ the same as above
 * $f(y_{i})$ equal to the average deviation from the overall mean minus the other effects
 * Note that the regularized movie and user effects were used in the model
 
 $$ Y_{u,i} = \mu + b_{i} + b_{u} + f(y_{i}) + \epsilon_{u,i} $$  
 
-Table 16 presents the results of the models. With the addition of this term to account for difference in average rating across year of release, as well as the regularized movie and user effects, the model was able to achieve a RMSE of 0.86400 in the test dataset. 
+Table 18 presents the results of this model. With the addition of this term to account for difference in average rating across year of release, as well as the regularized movie and user effects, the model improved slightly to achieve a RMSE of 0.86456 in the test dataset.  
 
 ``` {r model 5 - adding age of movie effects, echo = FALSE}
-
 # train the model 
 movie_reg_averages <- train_set %>% 
   group_by(movieId) %>%
@@ -1036,27 +1090,28 @@ results_rmse <- bind_rows(results_rmse,
                           data.frame(Method = "Model #5 - Adding Age of Movie Effects", 
                                      RMSE = model_5_rmse))
 results_rmse %>% 
-  kable(caption = "Results of Predictive Models in the Test Dataset", align = "c") %>%
-  kable_styling(font_size = 10)
+  kbl(caption = "Results in the Test Dataset", align = "lc") %>%
+  row_spec(0, bold = T, align = "c") %>%
+  kable_classic(full_width = F) %>%
+  kable_styling(latex_options = "hold_position", font_size = 10)
 ```
 \
 
-## Model 6 - Age of Rating Effects  
+## Model #6 - Adding Age of Rating Effects  
 
-Based on Figure 6, the model may benefit from including the date the rating was made. There was some variability in the average rating based on the date of the rating. As the pattern was most evident when grouped by year, a term was added in this model to represent the year of the rating. This term represents the average deviation for each year of rating from the overall mean minus the other variables already in the model.  
+Based on Figure 6, the model may also benefit from including the date the rating was made. That is, there was some variability in the average rating based on the date of the rating. As a result, a term was added in this model to represent the month of the rating. This term represents the average deviation for each month of rating from the overall mean minus the other variables already in the model.  
 
-This model can be represented with the following formula, with  
+This model can be represented with the following formula, with
 
-*	$\mu$, $\epsilon_{u,i}$, $b_i$, $b_u$, and $f(y_{i})$ the same as above  
-* $f(y_{u,i})$ equal to the average deviation from the overall mean minus the other effects
+*	$\mu$, $\epsilon_{u,i}$, $b_i$, $b_u$, and $f(y_{i})$ the same as above
+* $f(m_{u,i})$ equal to the average deviation from the overall mean minus the other effects
 * Note that the regularized movie and user effects were used in the model
 
-$$ Y_{u,i} = \mu + b_{i} + b_{u} + f(y_{i}) + f(y_{u,i}) + \epsilon_{u,i} $$  
+$$ Y_{u,i} = \mu + b_{i} + b_{u} + f(y_{i}) + f(m_{u,i}) + \epsilon_{u,i} $$  
 
-Table 17 presents the results of the models. With the addition of this term to account for difference in average rating across year of rating, as well as all of the previous effects or biases, the model was able to achieve a RMSE of 0.86387 in the test dataset.  
+Table 19 presents the results of this model. With the addition of this term to account for difference in average rating across year of rating, as well as all of the previous effects or biases, the model was able to achieve a RMSE of 0.86441 in the test dataset.  
 
 ``` {r model 6 - adding age of rating effects, echo = FALSE}
-
 # train the model 
 rating_age_averages <- train_set %>%
   left_join(movie_reg_averages, by = "movieId") %>%
@@ -1081,24 +1136,26 @@ results_rmse <- bind_rows(results_rmse,
                           data.frame(Method = "Model #6 - Adding Age of Rating Effects", 
                                      RMSE = model_6_rmse))
 results_rmse %>% 
-  kable(caption = "Results of Predictive Models in the Test Dataset", align = "c") %>%
-  kable_styling(font_size = 10)
+  kbl(caption = "Results in the Test Dataset", align = "lc") %>%
+  row_spec(0, bold = T, align = "c") %>%
+  kable_classic(full_width = F) %>%
+  kable_styling(latex_options = "hold_position", font_size = 10)
 ```
 \
 
-## Model 7 - Genre Effects  
+## Model #7 - Adding Genre Effects  
 
 Finally, as seen in Figures 14 and 16, the movie genre also appeared to impact ratings. In particular, as the mean rating varied considerably across the overall genre combinations (see Figure 14), a term was added in this model to represent the overall combination of genre tags. This term represents the average deviation for the genre from the overall mean minus the other variables already in the model.  
 
-This model can be represented with the following formula, with  
+This model can be represented with the following formula, with
 
-*	$\mu$, $\epsilon_{u,i}$, $b_i$, $b_u$, $f(y_{i})$, and $f(y_{u,i})$ the same as above  
+*	$\mu$, $\epsilon_{u,i}$, $b_i$, $b_u$, $f(y_{i})$, and $f(m_{u,i})$ the same as above
 * $b_g$ equal to the average deviation from the overall mean minus the other effects
 * Note that the regularized movie and user effects were used in the model
 
-$$ Y_{u,i} = \mu + b_{i} + b_{u} + f(y_{i}) + f(y_{u,i}) + b_g + \epsilon_{u,i} $$  
+$$ Y_{u,i} = \mu + b_{i} + b_{u} + f(y_{i}) + f(m_{u,i}) + b_g + \epsilon_{u,i} $$  
 
-Table 18 presents the results of all the models. With the addition of this term to account for difference in average rating across genres, as well as all of the previous effects or biases, the model was able to achieve a RMSE of 0.86359 in the test dataset. With this value of RMSE in the test dataset, this final model will now be evaluated in the validation dataset.  
+Table 20 presents the results of all the models. With the addition of this term to account for difference in average rating across genres, as well as all of the previous effects or biases, the model was able to achieve a RMSE of 0.86413 in the test dataset. With this value of RMSE in the test dataset, this final model was subsequently evaluated in the validation dataset.  
 
 ``` {r model 7 - adding genre effects, echo = FALSE}
 # train the model 
@@ -1127,14 +1184,18 @@ results_rmse <- bind_rows(results_rmse,
                           data.frame(Method = "Model #7 - Adding Genre Effects", 
                                      RMSE = model_7_rmse))
 results_rmse %>% 
-  kable(caption = "Results of Predictive Models in the Test Dataset", align = "c") %>%
-  kable_styling(font_size = 10)
+  kbl(caption = "Results in the Test Dataset", align = "lc") %>%
+  row_spec(0, bold = T, align = "c") %>%
+  kable_classic(full_width = F) %>%
+  kable_styling(latex_options = "hold_position", font_size = 10)
 ```
 \
 
+\pagebreak
+
 # Results on Validation Dataset  
 
-Next, the final model will be evaluated in the validation dataset (i.e., the final hold-out validation dataset). Note that prior to testing the final model in the validation dataset, the transformation conducted in the edx dataset must be run in the validation dataset (see the “Data Transformations” section). Table 19 presents the results of the final predictive model in the validation dataset, compared to its performance in the test dataset. The final predictive model was able to achieve a RMSE of 0.86493 in the validation dataset.  
+Next, the final model was evaluated in the validation dataset (i.e., the final hold-out validation dataset). Note that prior to testing the final model in the validation dataset, the transformation conducted in the edx dataset must be run in the validation dataset (see the “Data Transformations” section). Table 21 presents the results of the final predictive model in the validation dataset, compared to its performance in the test dataset. The final predictive model performed nearly as well in the validation dataset as it did in the test dataset. Specifically, the model was able to achieve a RMSE of 0.86441 in the validation dataset.  
 
 ``` {r results in the validation dataset, echo = FALSE}
 # transform timestamp to date of rating 
@@ -1164,46 +1225,54 @@ predicted_ratings <- validation %>%
 
 valid_rmse <- RMSE(predicted_ratings, validation$rating)
 
+# add the results to the table comparing different models 
 results_rmse <- bind_rows(results_rmse, 
                           data.frame(Method = "Final Model - Validation Results", 
                                      RMSE = valid_rmse))
 results_rmse %>%
-  kable(caption = "Results of Final Predictive Model in the Validation Dataset", align = "c") %>%
-  kable_styling(font_size = 10)
+  kbl(caption = "Final Results in the Validation Dataset", align = "lc") %>%
+  row_spec(0, bold = T, align = "c") %>%
+  row_spec(8, bold = T) %>%
+  kable_classic(full_width = F) %>%
+  kable_styling(latex_options = "hold_position", font_size = 10)
 ```
 \
 
+\pagebreak
+
 # Discussion  
 
-The aim of the project was to develop a recommendation system using the MovieLens dataset, in a similar vein to the Netflix challenge. Specifically, code was provided to download the 10M version of the MovieLens data and separate it into an edx dataset, used for exploration and development of the predictive model, and a validation dataset, used only for evaluating the final model. The predictive algorithms were evaluated based on the RMSE. Exploratory data analysis revealed considerable variability across each of the available variables. The edx dataset was split into a training and a test dataset and several models were built in sequence adding a new term in each model.  The final predictive model attempted to account for difference across movies, users, genres, year of release, and year of rating, as well as account for the fact that there were some users and movies that had relatively few ratings compared to others. Using only these five predictors and adjusting for the low number of observations for some users and movies, this predictive model was able to perform well with a RMSE of 0.86493 in the validation dataset.  
+The aim of the project was to develop a recommendation system using the MovieLens dataset, in a similar vein to the Netflix challenge. Specifically, code was provided to download the 10M version of the MovieLens data and separate it into an edx dataset, used for exploration and development of the predictive model, and a validation dataset, used only for evaluating the final model. The predictive algorithms were evaluated based on the RMSE. Exploratory data analysis revealed considerable variability across each of the available variables. The edx dataset was then split into a training and a test dataset and several models were built in sequence adding a new term in each model.  
 
-The final model can therefore be represented with the following formula, with  
+The final predictive model attempted to account for difference across movies, users, genres, year of release, and month of rating, as well as account for the fact that there were some users and movies that had relatively few ratings compared to others. Using these five predictors and adjusting for the low number of observations for some users and movies, this predictive model was able to perform well with a RMSE of 0.86441 in the validation dataset.  
 
-*	$\mu$ representing the overall mean  
-* $b_i$ representing the average movie effect  
-* $\lambda_{i}$ representing the penalized weight applied to movies  
-* $b_u$ representing the average user effect  
-* $\lambda_{u}$ representing the penalized weight applied to users  
-* $f(y_{i})$ representing the average year of release effect  
-* $f(y_{u,i})$ representing the average year of rating effect  
-* $b_g$ representing the average genre effect  
+The final model can therefore be represented with the following formula, with
 
-$$ Y_{u,i} = \mu + \lambda_{i}b_{i} + \lambda_{u}b_{u} + f(y_{i}) + f(y_{u,i}) + b_g + \epsilon_{u,i} $$  
+*	$\mu$ representing the overall mean
+* $b_i$ representing the average movie effect
+* $\lambda_{i}$ representing the penalized weight applied to movies
+* $b_u$ representing the average user effect
+* $\lambda_{u}$ representing the penalized weight applied to users
+* $f(y_{i})$ representing the average year of release effect
+* $f(m_{u,i})$ representing the average month of rating effect
+* $b_g$ representing the average genre effect
+
+$$ Y_{u,i} = \mu + \lambda_{i}b_{i} + \lambda_{u}b_{u} + f(y_{i}) + f(m_{u,i}) + b_g + \epsilon_{u,i} $$  
 
 ## Limitations  
 
-The size of the dataset and its relative sparsity when considered as a matrix of users in the rows and movies in the columns presented certain challenges. The magnitude of the dataset prevented the use of many functions (e.g., errors on allocating vectors). As a result, this project focused on a linear approach using least squares estimates. Due to the limitations of the current operating system combined with the volume of the data, alternative approaches were not feasible.  
+The size of the dataset and its relative sparsity when considered as a matrix of users in the rows and movies in the columns presented certain challenges. The magnitude of the dataset prevented the use of many functions (e.g., errors on allocating vectors). As a result, this project focused on a linear approach using least squares estimates. Due to the limitations of the current operating system combined with the volume of the data, alternative approaches were not feasible. This limited the available options for developing the predictive models.   
 
 ## Future Directions  
 
-A number of avenues could be pursued in order to improve upon the final model presented here.
-The model may be improved by reconsideration of the manner in which some of the variables were treated. For instance, the overall combinations of genre tags were treated as separate factors in the current project, whereas they could have been separated into the individual genre tags. The time effects could have also been handled differently, such as including a term to represent the relative time from movie release to rating. Regularization could have been used separately on each variable. The current project only used regularization for the movie and user effects and required the lambda coefficients to be equal. Additionally, alternative approaches could be investigated. Machine learning techniques such as k-means clustering or random forest could be used if the operating system permits. The use of matrix factorization, factor analysis, or principal component analysis would also likely improve upon the model.  
+A number of avenues could be pursued in order to improve upon the final model presented here. The model may be improved by reconsideration of the manner in which some of the variables were treated. For instance, the overall combinations of genre tags were treated as separate categories in the current project, whereas they could have been separated into the individual genre tags. The time effects could have also been handled differently, such as including a term to represent the relative time from movie release to rating. Regularization could have been used separately on each variable. The current project only used regularization for the movie and user effects and required the lambda coefficients to be equal for these variables. Additionally, alternative approaches could be investigated. Machine learning techniques such as k-means clustering or random forest could be used if the operating system permits. The use of matrix factorization, factor analysis, or principal component analysis would also likely improve upon the model.  
+
+\pagebreak
 
 # Appendix  
 
 This project and code were completed using the following specifications:  
 
 ```{r print environment, echo = FALSE}
-print("Operating System and R Version")
 version
 ```
